@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { QRCodeSVG } from "qrcode.react";
+import { QRCodeCanvas } from "qrcode.react";
 import { Button } from "@/components/ui/button";
 import { Download, Printer } from "lucide-react";
 
@@ -13,10 +13,10 @@ export default function QRCodeDisplay({ qrId }: QRCodeDisplayProps) {
   const checkInUrl = `${window.location.origin}/check-in/${qrId}`;
 
   const handleDownload = () => {
-    const element = qrRef.current?.querySelector("canvas") as HTMLCanvasElement;
-    if (element) {
+    const canvas = qrRef.current?.querySelector("canvas") as HTMLCanvasElement;
+    if (canvas) {
       const link = document.createElement("a");
-      link.href = element.toDataURL("image/png");
+      link.href = canvas.toDataURL("image/png");
       link.download = `qrcode-${qrId}.png`;
       link.click();
     }
@@ -29,7 +29,7 @@ export default function QRCodeDisplay({ qrId }: QRCodeDisplayProps) {
   return (
     <div className="space-y-4">
       <div ref={qrRef} className="flex justify-center p-8 bg-white">
-        <QRCodeSVG value={checkInUrl} size={256} level="H" includeMargin={true} />
+        <QRCodeCanvas value={checkInUrl} size={256} level="H" includeMargin={true} />
       </div>
 
       <div className="bg-gray-50 p-4 rounded-lg break-all">
