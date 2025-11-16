@@ -18,7 +18,7 @@ interface LayoutProps {
 }
 
 export function Layout({ children }: LayoutProps) {
-  const { user, isAdmin, isOperator, signOut } = useAuth();
+  const { user, userRoles, signOut } = useAuth();
   const location = useLocation();
 
   if (!user) return <>{children}</>;
@@ -32,12 +32,8 @@ export function Layout({ children }: LayoutProps) {
     { href: "/admin", icon: Shield, label: "ניהול משתמשים", roles: ["admin"] },
   ];
 
-  const userRoles = [];
-  if (isAdmin) userRoles.push("admin");
-  if (isOperator) userRoles.push("operator");
-  
-  const filteredNavItems = navItems.filter(item => 
-    item.roles.some(role => userRoles.includes(role))
+  const filteredNavItems = navItems.filter(item =>
+    item.roles.some(role => userRoles?.includes(role as any))
   );
 
   return (
