@@ -69,16 +69,26 @@ export default function ExcelImport({ trialDayId, onSuccess }: ExcelImportProps)
           mapping["phone"] = header;
         } else if (
           lowerHeader.includes("age") ||
-          lowerHeader.includes("גיל") ||
-          lowerHeader.includes("birth")
+          lowerHeader.includes("גיל")
         ) {
           mapping["age"] = header;
+        } else if (
+          lowerHeader.includes("birth") ||
+          lowerHeader.includes("תאריך לידה")
+        ) {
+          mapping["birth_date"] = header;
         } else if (lowerHeader.includes("weight") || lowerHeader.includes("משקל")) {
           mapping["weight_kg"] = header;
         } else if (lowerHeader.includes("height") || lowerHeader.includes("גובה")) {
           mapping["height_cm"] = header;
         } else if (lowerHeader.includes("gender") || lowerHeader.includes("מין")) {
           mapping["gender"] = header;
+        } else if (lowerHeader.includes("skin") || lowerHeader.includes("צבע")) {
+          mapping["skin_color"] = header;
+        } else if (lowerHeader.includes("allerg") || lowerHeader.includes("אלרגיה")) {
+          mapping["allergies"] = header;
+        } else if (lowerHeader.includes("note") || lowerHeader.includes("הערה")) {
+          mapping["notes"] = header;
         }
       });
 

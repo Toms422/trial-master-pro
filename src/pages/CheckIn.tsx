@@ -49,9 +49,8 @@ type CheckInFormData = z.infer<typeof checkInSchema>;
 export default function CheckIn() {
   const { qrId } = useParams<{ qrId: string }>();
   const navigate = useNavigate();
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { control, register, handleSubmit, watch, formState: { errors } } = useForm<CheckInFormData>({
+  const { control, register, handleSubmit, watch, setValue, formState: { errors } } = useForm<CheckInFormData>({
     resolver: zodResolver(checkInSchema),
     defaultValues: {
       full_name: "",
@@ -115,24 +114,24 @@ export default function CheckIn() {
     },
   });
 
-  const onSubmit = async (data: CheckInFormData) => {
-    setIsSubmitting(true);
+  const onSubmit = (data: CheckInFormData) => {
     updateMutation.mutate(data);
   };
 
   // Set default values when participant loads
   useEffect(() => {
     if (participant) {
-      Object.keys(participant).forEach((key) => {
-        if (key !== "form_completed" && key !== "id") {
-          const inputEl = document.querySelector(`[name="${key}"]`) as HTMLInputElement;
-          if (inputEl && participant[key as keyof Participant]) {
-            inputEl.value = String(participant[key as keyof Participant]);
-          }
-        }
-      });
+      setValue("full_name", participant.full_name);
+      if (participant.age) setValue("age", participant.age);
+      if (participant.birth_date) setValue("birth_date", participant.birth_date);
+      if (participant.weight_kg) setValue("weight_kg", participant.weight_kg);
+      if (participant.height_cm) setValue("height_cm", participant.height_cm);
+      if (participant.gender) setValue("gender", participant.gender);
+      if (participant.skin_color) setValue("skin_color", participant.skin_color);
+      if (participant.allergies) setValue("allergies", participant.allergies);
+      if (participant.notes) setValue("notes", participant.notes);
     }
-  }, [participant]);
+  }, [participant, setValue]);
 
   if (isLoading) {
     return (
@@ -264,10 +263,7 @@ export default function CheckIn() {
               <Label htmlFor="gender">
                 מין<span className="text-red-500">*</span>
               </Label>
-              <Select onValueChange={(value) => {
-                const input = document.querySelector('[name="gender"]') as HTMLInputElement;
-                if (input) input.value = value;
-              }}>
+              <Select value={watch("gender")} onValueChange={(value) => setValue("gender", value)}>
                 <SelectTrigger id="gender">
                   <SelectValue placeholder="בחר מין" />
                 </SelectTrigger>
@@ -277,7 +273,6 @@ export default function CheckIn() {
                   <SelectItem value="other">אחר</SelectItem>
                 </SelectContent>
               </Select>
-              <input type="hidden" {...register("gender")} />
               {errors.gender && <p className="text-red-500 text-sm mt-1">{errors.gender.message}</p>}
             </div>
 
