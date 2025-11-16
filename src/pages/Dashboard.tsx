@@ -1,6 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { TestTube, Calendar, Users, ClipboardList } from "lucide-react";
+import { TestTube, Calendar, Users, ClipboardList, Shield, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function Dashboard() {
@@ -12,28 +12,40 @@ export default function Dashboard() {
       description: "נהל עמדות ניסוי קיימות וצור חדשות",
       icon: TestTube,
       href: "/stations",
-      color: "text-primary",
+      gradient: "from-blue-500 to-blue-600",
+      bgLight: "bg-blue-50",
     },
     {
       title: "ימי ניסוי",
       description: "תכנן ונהל ימי ניסוי עתידיים",
       icon: Calendar,
       href: "/trial-days",
-      color: "text-accent",
+      gradient: "from-purple-500 to-purple-600",
+      bgLight: "bg-purple-50",
     },
     {
       title: "נסיינים",
       description: "צפה ונהל נסיינים רשומים",
       icon: Users,
       href: "/participants",
-      color: "text-success",
+      gradient: "from-emerald-500 to-emerald-600",
+      bgLight: "bg-emerald-50",
     },
     {
       title: "יומן ביקורת",
       description: "עיין בפעולות שבוצעו במערכת",
       icon: ClipboardList,
       href: "/audit",
-      color: "text-warning",
+      gradient: "from-amber-500 to-amber-600",
+      bgLight: "bg-amber-50",
+    },
+    {
+      title: "ניהול משתמשים",
+      description: "נהל משתמשים והרשאות",
+      icon: Shield,
+      href: "/admin",
+      gradient: "from-red-500 to-red-600",
+      bgLight: "bg-red-50",
     },
   ];
 
@@ -43,45 +55,58 @@ export default function Dashboard() {
       description: "צפה בימי ניסוי ונהל נסיינים",
       icon: Calendar,
       href: "/trial-days",
-      color: "text-accent",
+      gradient: "from-purple-500 to-purple-600",
+      bgLight: "bg-purple-50",
     },
     {
       title: "נסיינים",
       description: "סמן הגעות ומלא פרטי נסיין",
       icon: Users,
       href: "/participants",
-      color: "text-success",
+      gradient: "from-emerald-500 to-emerald-600",
+      bgLight: "bg-emerald-50",
     },
   ];
 
   const cards = isAdmin ? adminCards : isOperator ? operatorCards : [];
 
   return (
-    <div className="space-y-8">
-      <div className="space-y-2">
-        <h1 className="text-4xl font-bold">שלום, {user?.email}</h1>
-        <p className="text-muted-foreground">
-          {isAdmin && "אתה מחובר כמנהל מערכת"}
-          {isOperator && !isAdmin && "אתה מחובר כמפעיל ניסוי"}
-        </p>
+    <div className="space-y-10">
+      {/* Header Section */}
+      <div className="space-y-4">
+        <div>
+          <h1 className="text-4xl md:text-5xl font-bold text-slate-900">
+            שלום, {user?.email?.split("@")[0]}
+          </h1>
+          <p className="text-lg text-slate-600 mt-2">
+            {isAdmin && "🔐 מנהל מערכת"}
+            {isOperator && !isAdmin && "👨‍🔬 מפעיל ניסוי"}
+          </p>
+        </div>
+        <div className="h-1 w-24 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full"></div>
       </div>
 
+      {/* Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {cards.map((card) => {
           const Icon = card.icon;
           return (
-            <Link key={card.href} to={card.href}>
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
-                <CardHeader>
-                  <div className="flex items-center gap-4">
-                    <div className="bg-primary/10 p-3 rounded-lg">
-                      <Icon className={`h-6 w-6 ${card.color}`} />
+            <Link key={card.href} to={card.href} className="group">
+              <Card className="h-full overflow-hidden border-0 shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer">
+                {/* Color Bar */}
+                <div className={`h-1 bg-gradient-to-r ${card.gradient}`}></div>
+
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className={`${card.bgLight} p-3 rounded-lg group-hover:scale-110 transition-transform`}>
+                      <Icon className={`h-6 w-6 bg-gradient-to-br ${card.gradient} bg-clip-text text-transparent`} />
                     </div>
-                    <div>
-                      <CardTitle>{card.title}</CardTitle>
-                      <CardDescription>{card.description}</CardDescription>
-                    </div>
+                    <ArrowLeft className="h-4 w-4 text-slate-400 group-hover:text-slate-600 group-hover:translate-x-1 transition-all" />
                   </div>
+                  <CardTitle className="text-xl text-slate-900">{card.title}</CardTitle>
+                  <CardDescription className="text-slate-600 text-sm mt-2">
+                    {card.description}
+                  </CardDescription>
                 </CardHeader>
               </Card>
             </Link>
@@ -89,16 +114,33 @@ export default function Dashboard() {
         })}
       </div>
 
+      {/* No Permissions Message */}
       {!isAdmin && !isOperator && (
-        <Card>
+        <Card className="border-0 shadow-md bg-gradient-to-br from-amber-50 to-orange-50">
           <CardHeader>
-            <CardTitle>אין הרשאות</CardTitle>
-            <CardDescription>
-              נראה שאין לך הרשאות להשתמש במערכת. אנא פנה למנהל המערכת.
+            <CardTitle className="text-xl text-amber-900">⚠️ אין הרשאות</CardTitle>
+            <CardDescription className="text-amber-800 text-base mt-2">
+              נראה שאין לך הרשאות להשתמש במערכת. אנא פנה למנהל המערכת לקבלת גישה.
             </CardDescription>
           </CardHeader>
         </Card>
       )}
+
+      {/* Footer Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-12 pt-8 border-t border-slate-200">
+        <div className="text-center">
+          <p className="text-3xl font-bold text-blue-600">100+</p>
+          <p className="text-slate-600 text-sm">נסיינים פעילים</p>
+        </div>
+        <div className="text-center">
+          <p className="text-3xl font-bold text-purple-600">24/7</p>
+          <p className="text-slate-600 text-sm">זמן הגדרה מערכת</p>
+        </div>
+        <div className="text-center">
+          <p className="text-3xl font-bold text-emerald-600">99%</p>
+          <p className="text-slate-600 text-sm">זמן פעולה</p>
+        </div>
+      </div>
     </div>
   );
 }

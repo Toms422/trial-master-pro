@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, TestTube, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -135,10 +135,11 @@ export default function CheckIn() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-50 to-white p-4">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-4">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-          <p className="text-gray-600">טוען...</p>
+          <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-white border-t-blue-400 mb-6"></div>
+          <p className="text-white text-lg font-medium">טוען נתונים...</p>
+          <p className="text-slate-300 text-sm mt-2">אנא חכה רגע</p>
         </div>
       </div>
     );
@@ -146,14 +147,19 @@ export default function CheckIn() {
 
   if (error || !participant) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-red-50 to-white p-4">
-        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md text-center">
-          <AlertCircle className="w-16 h-16 text-red-600 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">שגיאה</h1>
-          <p className="text-gray-600 mb-6">
-            {error ? "הקוד QR לא תקין או פג תוקף" : "לא נמצא נסיין בקוד זה"}
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-4">
+        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md text-center">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="w-8 h-8 text-red-600" />
+          </div>
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">שגיאה</h1>
+          <p className="text-slate-600 mb-8 text-base">
+            {error ? "הקוד QR לא תקין או פג תוקף 🔍" : "לא נמצא משתתף בקוד זה 📋"}
           </p>
-          <Button onClick={() => navigate("/")} className="w-full">
+          <Button
+            onClick={() => navigate("/")}
+            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white h-11 font-semibold"
+          >
             חזור לעמוד הבית
           </Button>
         </div>
@@ -163,14 +169,17 @@ export default function CheckIn() {
 
   if (participant.form_completed) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-green-50 to-white p-4">
-        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md text-center">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-3xl">✓</span>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-emerald-900 to-slate-900 p-4">
+        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md text-center">
+          <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <CheckCircle className="w-8 h-8 text-emerald-600" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">טופס כבר מולא</h1>
-          <p className="text-gray-600 mb-6">הטופס עבור {participant.full_name} כבר נשלח בהצלחה</p>
-          <Button onClick={() => navigate("/")} className="w-full">
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">✅ טופס הושלם</h1>
+          <p className="text-slate-600 mb-8 text-base">הטופס עבור {participant.full_name} כבר נשלח בהצלחה</p>
+          <Button
+            onClick={() => navigate("/")}
+            className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white h-11 font-semibold"
+          >
             חזור לעמוד הבית
           </Button>
         </div>
@@ -179,30 +188,38 @@ export default function CheckIn() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white py-8 px-4">
-      <div className="max-w-2xl mx-auto">
-        <div className="bg-white rounded-lg shadow-lg p-8 mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">טופס מילוי פרטים</h1>
-          <p className="text-gray-600 mb-6">שלום {participant.full_name}! בואו נמלא את הפרטים שלך</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 py-8 px-4 flex items-center justify-center">
+      <div className="max-w-2xl w-full">
+        <div className="bg-white rounded-2xl shadow-2xl p-8 md:p-12 mb-6">
+          {/* Header */}
+          <div className="mb-8">
+            <div className="inline-block bg-gradient-to-br from-blue-600 to-indigo-600 p-3 rounded-lg mb-4">
+              <TestTube className="h-6 w-6 text-white" />
+            </div>
+            <h1 className="text-4xl font-bold text-slate-900 mb-2">טופס משתתף</h1>
+            <p className="text-lg text-slate-600">שלום {participant.full_name}! 👋</p>
+            <p className="text-slate-500 text-sm mt-2">אנא מלא את הפרטים להלן כדי להשלים את התהליך</p>
+            <div className="h-1 w-24 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full mt-4"></div>
+          </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {/* Full Name - Read Only */}
             <div>
-              <Label htmlFor="full_name">שם מלא</Label>
+              <Label htmlFor="full_name" className="text-slate-900 font-semibold">שם מלא</Label>
               <Input
                 id="full_name"
                 {...register("full_name")}
                 defaultValue={participant.full_name}
                 disabled
-                className="bg-gray-100"
+                className="bg-slate-100 border-slate-300 text-slate-700 cursor-not-allowed mt-2"
               />
-              <p className="text-xs text-gray-500 mt-1">שדה זה קרוא בלבד</p>
+              <p className="text-xs text-slate-500 mt-2">👁️ שדה זה קרוא בלבד</p>
             </div>
 
             {/* Age */}
             <div>
-              <Label htmlFor="age">
-                גיל<span className="text-red-500">*</span>
+              <Label htmlFor="age" className="text-slate-900 font-semibold flex items-center gap-1">
+                🎂 גיל<span className="text-red-500">*</span>
               </Label>
               <Input
                 id="age"
@@ -211,24 +228,28 @@ export default function CheckIn() {
                 max="150"
                 {...register("age", { valueAsNumber: true })}
                 placeholder="הכנס גיל"
+                className="mt-2 border-slate-300 focus:border-blue-500 focus:ring-blue-500"
               />
-              {errors.age && <p className="text-red-500 text-sm mt-1">{errors.age.message}</p>}
+              {errors.age && <p className="text-red-600 text-sm mt-2 font-medium">{errors.age.message}</p>}
             </div>
 
             {/* Birth Date */}
             <div>
-              <Label htmlFor="birth_date">תאריך לידה</Label>
+              <Label htmlFor="birth_date" className="text-slate-900 font-semibold flex items-center gap-1">
+                📅 תאריך לידה
+              </Label>
               <Input
                 id="birth_date"
                 type="date"
                 {...register("birth_date")}
+                className="mt-2 border-slate-300 focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
 
             {/* Weight */}
             <div>
-              <Label htmlFor="weight_kg">
-                משקל (ק"ג)<span className="text-red-500">*</span>
+              <Label htmlFor="weight_kg" className="text-slate-900 font-semibold flex items-center gap-1">
+                ⚖️ משקל (ק"ג)<span className="text-red-500">*</span>
               </Label>
               <Input
                 id="weight_kg"
@@ -238,14 +259,15 @@ export default function CheckIn() {
                 step="0.5"
                 {...register("weight_kg", { valueAsNumber: true })}
                 placeholder="הכנס משקל בק״ג"
+                className="mt-2 border-slate-300 focus:border-blue-500 focus:ring-blue-500"
               />
-              {errors.weight_kg && <p className="text-red-500 text-sm mt-1">{errors.weight_kg.message}</p>}
+              {errors.weight_kg && <p className="text-red-600 text-sm mt-2 font-medium">{errors.weight_kg.message}</p>}
             </div>
 
             {/* Height */}
             <div>
-              <Label htmlFor="height_cm">
-                גובה (ס"מ)<span className="text-red-500">*</span>
+              <Label htmlFor="height_cm" className="text-slate-900 font-semibold flex items-center gap-1">
+                📏 גובה (ס"מ)<span className="text-red-500">*</span>
               </Label>
               <Input
                 id="height_cm"
@@ -254,92 +276,104 @@ export default function CheckIn() {
                 max="250"
                 {...register("height_cm", { valueAsNumber: true })}
                 placeholder="הכנס גובה בס״מ"
+                className="mt-2 border-slate-300 focus:border-blue-500 focus:ring-blue-500"
               />
-              {errors.height_cm && <p className="text-red-500 text-sm mt-1">{errors.height_cm.message}</p>}
+              {errors.height_cm && <p className="text-red-600 text-sm mt-2 font-medium">{errors.height_cm.message}</p>}
             </div>
 
             {/* Gender */}
             <div>
-              <Label htmlFor="gender">
-                מין<span className="text-red-500">*</span>
+              <Label htmlFor="gender" className="text-slate-900 font-semibold flex items-center gap-1">
+                👤 מין<span className="text-red-500">*</span>
               </Label>
               <Select value={watch("gender")} onValueChange={(value) => setValue("gender", value)}>
-                <SelectTrigger id="gender">
+                <SelectTrigger id="gender" className="mt-2 border-slate-300 focus:border-blue-500 focus:ring-blue-500">
                   <SelectValue placeholder="בחר מין" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="male">זכר</SelectItem>
-                  <SelectItem value="female">נקבה</SelectItem>
-                  <SelectItem value="other">אחר</SelectItem>
+                  <SelectItem value="male">♂️ זכר</SelectItem>
+                  <SelectItem value="female">♀️ נקבה</SelectItem>
+                  <SelectItem value="other">⚡ אחר</SelectItem>
                 </SelectContent>
               </Select>
-              {errors.gender && <p className="text-red-500 text-sm mt-1">{errors.gender.message}</p>}
+              {errors.gender && <p className="text-red-600 text-sm mt-2 font-medium">{errors.gender.message}</p>}
             </div>
 
             {/* Skin Color */}
             <div>
-              <Label htmlFor="skin_color">צבע עור</Label>
+              <Label htmlFor="skin_color" className="text-slate-900 font-semibold flex items-center gap-1">
+                🎨 צבע עור
+              </Label>
               <Input
                 id="skin_color"
                 {...register("skin_color")}
                 placeholder="תאר את צבע העור"
+                className="mt-2 border-slate-300 focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
 
             {/* Allergies */}
             <div>
-              <Label htmlFor="allergies">אלרגיות</Label>
+              <Label htmlFor="allergies" className="text-slate-900 font-semibold flex items-center gap-1">
+                ⚠️ אלרגיות
+              </Label>
               <Textarea
                 id="allergies"
                 {...register("allergies")}
-                placeholder="תאר כל אלרגיה או רגישות"
+                placeholder="תאר כל אלרגיה או רגישות (אם קיימת)"
                 rows={3}
+                className="mt-2 border-slate-300 focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
 
             {/* Notes */}
             <div>
-              <Label htmlFor="notes">הערות</Label>
+              <Label htmlFor="notes" className="text-slate-900 font-semibold flex items-center gap-1">
+                📝 הערות
+              </Label>
               <Textarea
                 id="notes"
                 {...register("notes")}
-                placeholder="הערות נוספות"
+                placeholder="הערות נוספות או מידע חשוב שברצונך לשתף"
                 rows={3}
+                className="mt-2 border-slate-300 focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
 
             {/* Consent */}
-            <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-lg">
+            <div className="flex items-start gap-3 p-5 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
               <input
                 type="checkbox"
                 id="consent"
                 {...register("consent")}
-                className="mt-1"
+                className="mt-1 w-5 h-5 accent-blue-600 cursor-pointer"
               />
               <div>
-                <label htmlFor="consent" className="text-sm font-medium text-gray-900 cursor-pointer">
-                  אני מסכים/ה להשתמש בנתונים שלי<span className="text-red-500">*</span>
+                <label htmlFor="consent" className="text-sm font-semibold text-slate-900 cursor-pointer block">
+                  אני מסכים/ה להשתמש בנתונים שלי<span className="text-red-500 ml-1">*</span>
                 </label>
-                <p className="text-xs text-gray-600 mt-1">
-                  אני מאשר/ת שהנתונים שלי יעובדו בהתאם לנוהלי הנסיון
+                <p className="text-xs text-slate-600 mt-1">
+                  ✓ הנתונים שלי יעובדו בהתאם לנוהלי הנסיון וגם בהתאם לתנאים שנקבעו
                 </p>
               </div>
             </div>
-            {errors.consent && <p className="text-red-500 text-sm">{errors.consent.message}</p>}
+            {errors.consent && <p className="text-red-600 text-sm font-medium">{errors.consent.message}</p>}
 
             {/* Submit Button */}
             <Button
               type="submit"
-              disabled={isSubmitting || updateMutation.isPending}
-              className="w-full h-12 text-lg"
+              disabled={updateMutation.isPending}
+              className="w-full h-12 text-lg font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all"
             >
-              {updateMutation.isPending ? "שולח..." : "שלח טופס"}
+              {updateMutation.isPending ? "📤 שולח..." : "✅ שלח טופס"}
             </Button>
           </form>
 
-          <p className="text-xs text-gray-500 text-center mt-6">
-            הנתונים שלך מוגנים בהצפנה וישמרו בבטחון
-          </p>
+          <div className="mt-8 p-4 bg-slate-50 rounded-lg border border-slate-200">
+            <p className="text-xs text-slate-500 text-center">
+              🔒 הנתונים שלך מוגנים בהצפנה ובטוח. אנו שומרים על הפרטיות שלך בקפידה.
+            </p>
+          </div>
         </div>
       </div>
     </div>
