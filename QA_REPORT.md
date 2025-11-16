@@ -27,6 +27,7 @@
 ### 2. ✅ Excel Import - Incomplete Column Mapping
 **Severity**: MEDIUM
 **File**: `src/components/participants/ExcelImport.tsx`
+**Commit**: 6330a87
 
 **Problem**:
 - Auto-detection only mapped: full_name, phone, age, weight_kg, height_cm, gender
@@ -42,6 +43,37 @@
 
 ---
 
+### 3. ✅ QR Code Generation - Wrong Component Type
+**Severity**: HIGH
+**File**: `src/components/participants/QRCodeDisplay.tsx`
+**Commit**: eddb868
+
+**Problem**:
+- Using `QRCodeSVG` but trying to download as canvas
+- Download button would fail because SVG doesn't have a canvas element
+- QR code generation was broken
+
+**Fix**:
+- Changed from `QRCodeSVG` to `QRCodeCanvas` for proper canvas rendering
+- Fixed download functionality to extract canvas from QRCodeCanvas
+- Verified CheckIn route is public (no authentication required)
+
+**Lines Changed**: 2, 11, 16, 32
+
+---
+
+### 4. ✅ CheckIn Form - Authentication Not Required
+**Severity**: MEDIUM
+**File**: `src/App.tsx`
+**Status**: Already Correct ✅
+
+**Verification**:
+- CheckIn route at `/check-in/:qrId` is NOT wrapped in `ProtectedRoute`
+- Route is public and accessible without authentication
+- Mobile users can fill forms without logging in
+
+---
+
 ## Test Cases Executed
 
 ### ✅ Authentication & Authorization
@@ -49,6 +81,8 @@
 - [x] ProtectedRoute component validates auth
 - [x] Layout.tsx uses userRoles from context correctly
 - [x] Role-based filtering in navigation working
+- [x] CheckIn page is public (no authentication)
+- [x] QR code URLs work without login
 
 ### ⚠️ In Progress
 
@@ -123,7 +157,20 @@
 
 ## Known Issues Found But Not Yet Fixed
 
-None currently. All identified issues have been fixed.
+None currently. All identified issues have been fixed and tested.
+
+---
+
+## Latest Fixes Summary
+
+**Commit eddb868** - Fix QR Code generation and CheckIn public access:
+1. ✅ QRCodeCanvas component now generates canvas properly
+2. ✅ Download PNG functionality works
+3. ✅ CheckIn form is publicly accessible
+4. ✅ QR code URLs are shareable without login
+5. ✅ Build passes with all 1841 modules
+
+**Status**: Ready for production testing
 
 ---
 
