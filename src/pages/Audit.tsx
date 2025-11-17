@@ -179,12 +179,12 @@ export default function Audit() {
           {isLoading ? (
             <Skeleton className="h-10 w-full" />
           ) : (
-            <Select value={filterTable} onValueChange={setFilterTable}>
+            <Select value={filterTable || "all"} onValueChange={(val) => setFilterTable(val === "all" ? "" : val)}>
               <SelectTrigger id="filterTable">
                 <SelectValue placeholder="בחר טבלה" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">כל הטבלאות</SelectItem>
+                <SelectItem value="all">כל הטבלאות</SelectItem>
                 {uniqueTables.map((table) => (
                   <SelectItem key={table} value={table}>
                     {table}
@@ -200,12 +200,12 @@ export default function Audit() {
           {isLoading ? (
             <Skeleton className="h-10 w-full" />
           ) : (
-            <Select value={filterAction} onValueChange={setFilterAction}>
+            <Select value={filterAction || "all"} onValueChange={(val) => setFilterAction(val === "all" ? "" : val)}>
               <SelectTrigger id="filterAction">
                 <SelectValue placeholder="בחר פעולה" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">כל הפעולות</SelectItem>
+                <SelectItem value="all">כל הפעולות</SelectItem>
                 {uniqueActions.map((action) => (
                   <SelectItem key={action} value={action}>
                     {action}
