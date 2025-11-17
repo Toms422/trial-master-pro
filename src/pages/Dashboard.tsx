@@ -2,6 +2,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TestTube, Calendar, Users, ClipboardList, Shield, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
+import CheckInStatsWidget from "@/components/dashboard/CheckInStatsWidget";
 
 export default function Dashboard() {
   const { user, isAdmin, isOperator } = useAuth();
@@ -85,6 +86,9 @@ export default function Dashboard() {
         </div>
         <div className="h-1 w-24 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full"></div>
       </div>
+
+      {/* Real-time Stats Widget */}
+      <CheckInStatsWidget />
 
       {/* Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
