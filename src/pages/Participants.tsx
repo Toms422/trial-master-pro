@@ -119,7 +119,7 @@ export default function Participants() {
 
   // Create/Update participant mutation
   const upsertMutation = useMutation({
-    mutationFn: async (participant: Partial<Participant>) => {
+    mutationFn: async (participant: Partial<Participant> & { full_name: string; phone: string; trial_day_id: string }) => {
       if (editingParticipant) {
         const { error } = await supabase
           .from("participants")
