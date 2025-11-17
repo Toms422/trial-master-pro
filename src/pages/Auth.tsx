@@ -13,7 +13,10 @@ import AnimatedLoadingButton from "@/components/AnimatedLoadingButton";
 import { z } from "zod";
 
 const authSchema = z.object({
-  email: z.string().email({ message: "כתובת דוא\"ל לא תקינה" }),
+  email: z.string().min(1, { message: "דוא\"ל נדרש" }).refine(
+    (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email),
+    { message: "כתובת דוא\"ל לא תקינה" }
+  ),
   password: z.string().min(6, { message: "הסיסמה חייבת להכיל לפחות 6 תווים" }),
   fullName: z.string().min(2, { message: "שם מלא חייב להכיל לפחות 2 תווים" }).optional(),
   phone: z.string().optional(),
