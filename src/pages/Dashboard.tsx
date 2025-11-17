@@ -4,7 +4,6 @@ import { TestTube, Calendar, Users, ClipboardList, Shield, ArrowLeft } from "luc
 import { Link } from "react-router-dom";
 import CheckInStatsWidget from "@/components/dashboard/CheckInStatsWidget";
 import ActivityFeed from "@/components/dashboard/ActivityFeed";
-import AnimatedCounter from "@/components/AnimatedCounter";
 
 export default function Dashboard() {
   const { user, isAdmin, isOperator } = useAuth();
@@ -148,32 +147,6 @@ export default function Dashboard() {
           </CardHeader>
         </Card>
       )}
-
-      {/* Footer Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-12 pt-8 border-t border-slate-200">
-        <div className="text-center">
-          <AnimatedCounter
-            to={100}
-            duration={2}
-            suffix="+"
-            className="text-3xl font-bold text-blue-600"
-          />
-          <p className="text-slate-600 text-sm">נסיינים פעילים</p>
-        </div>
-        <div className="text-center">
-          <p className="text-3xl font-bold text-purple-600">24/7</p>
-          <p className="text-slate-600 text-sm">זמינות</p>
-        </div>
-        <div className="text-center">
-          <AnimatedCounter
-            to={99}
-            duration={2}
-            suffix="%"
-            className="text-3xl font-bold text-emerald-600"
-          />
-          <p className="text-slate-600 text-sm">שביעות רצון</p>
-        </div>
-      </div>
     </div>
   );
 }

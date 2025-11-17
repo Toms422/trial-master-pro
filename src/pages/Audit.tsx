@@ -169,7 +169,7 @@ export default function Audit() {
   }
 
   return (
-    <div className="w-full p-6">
+    <div className="w-full p-6 dir-rtl" dir="rtl">
       <h1 className="text-3xl font-bold mb-6">לוג אודיט</h1>
 
       {/* Filters */}

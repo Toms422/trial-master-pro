@@ -335,7 +335,7 @@ export default function Participants() {
   const selectedTrialDay = trialDays?.find((td) => td.id === selectedTrialDayId);
 
   return (
-    <div className="w-full p-6">
+    <div className="w-full p-6 dir-rtl" dir="rtl">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">ניהול נסיינים</h1>
         <div className="flex gap-2">
