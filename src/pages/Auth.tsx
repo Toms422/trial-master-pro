@@ -14,7 +14,7 @@ import { z } from "zod";
 
 const authSchema = z.object({
   email: z.string().min(1, { message: "דוא\"ל נדרש" }).refine(
-    (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email),
+    (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/i.test(email),
     { message: "כתובת דוא\"ל לא תקינה" }
   ),
   password: z.string().min(6, { message: "הסיסמה חייבת להכיל לפחות 6 תווים" }),
