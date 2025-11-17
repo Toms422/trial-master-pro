@@ -10,7 +10,7 @@ echo "====================================================================="
 echo ""
 
 # Database credentials
-DB_PASSWORD="ecftkpisdzxhjgibogjq"
+DB_PASSWORD="Tomsal979"
 DB_HOST="db.ecftkpisdzxhjgibogjq.supabase.co"
 DB_PORT="5432"
 DB_USER="postgres"

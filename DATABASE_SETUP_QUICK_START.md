@@ -2,7 +2,7 @@
 
 **Your Database Credentials:**
 ```
-postgresql://postgres:ecftkpisdzxhjgibogjq@db.ecftkpisdzxhjgibogjq.supabase.co:5432/postgres
+postgresql://postgres:Tomsal979@db.ecftkpisdzxhjgibogjq.supabase.co:5432/postgres
 ```
 
 ---
