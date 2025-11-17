@@ -128,8 +128,8 @@ export default function CheckIn() {
         if (participant) {
           await logAction({
             action: 'form_submitted',
-            tableName: 'participants',
-            recordId: participant.id,
+            table_name: 'participants',
+            record_id: participant.id,
             changes: {},
           });
         }

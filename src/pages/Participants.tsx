@@ -142,16 +142,16 @@ export default function Participants() {
         if (editingParticipant) {
           await logAction({
             action: 'updated',
-            tableName: 'participants',
-            recordId: editingParticipant.id,
+            table_name: 'participants',
+            record_id: editingParticipant.id,
             changes: formData,
           });
         } else {
           const participantId = editingParticipant?.id || 'new';
           await logAction({
             action: 'created',
-            tableName: 'participants',
-            recordId: participantId,
+            table_name: 'participants',
+            record_id: participantId,
             changes: formData,
           });
         }
@@ -180,8 +180,8 @@ export default function Participants() {
       try {
         await logAction({
           action: 'deleted',
-          tableName: 'participants',
-          recordId: id,
+          table_name: 'participants',
+          record_id: id,
           changes: {},
         });
       } catch (err) {
@@ -216,8 +216,8 @@ export default function Participants() {
       try {
         await logAction({
           action: 'marked_arrived',
-          tableName: 'participants',
-          recordId: id,
+          table_name: 'participants',
+          record_id: id,
           changes: { arrived: true },
         });
       } catch (err) {
@@ -250,8 +250,8 @@ export default function Participants() {
       try {
         await logAction({
           action: 'updated',
-          tableName: 'participants',
-          recordId: id,
+          table_name: 'participants',
+          record_id: id,
           changes: { trial_completed: true },
         });
       } catch (err) {

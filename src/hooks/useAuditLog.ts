@@ -4,8 +4,8 @@ import { useAuth } from '@/contexts/AuthContext';
 
 export interface AuditLogEntry {
   action: 'created' | 'updated' | 'deleted' | 'marked_arrived' | 'qr_generated' | 'form_submitted';
-  tableName: string;
-  recordId: string;
+  table_name: string;
+  record_id: string;
   changes?: Record<string, unknown>;
 }
 
@@ -23,10 +23,9 @@ export function useAuditLog() {
         const { error } = await supabase.from('audit_log').insert({
           user_id: user.id,
           action: entry.action,
-          table_name: entry.tableName,
-          record_id: entry.recordId,
+          table_name: entry.table_name,
+          record_id: entry.record_id,
           changes: entry.changes || null,
-          created_at: new Date().toISOString(),
         });
 
         if (error) {
