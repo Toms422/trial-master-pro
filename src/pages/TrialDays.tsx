@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertCircle, Plus, Edit2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -234,7 +235,7 @@ export default function TrialDays() {
         </Button>
       </div>
 
-      {trialDays && trialDays.length > 0 ? (
+      {trialDaysLoading ? (
         <div className="border rounded-lg overflow-hidden">
           <Table>
             <TableHeader>
@@ -249,10 +250,43 @@ export default function TrialDays() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {trialDays.map((trialDay) => {
+              {[0, 1, 2, 3, 4].map((i) => (
+                <TableRow key={i} className="animate-pulse">
+                  <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-8" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                  <TableCell><Skeleton className="h-8 w-16" /></TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      ) : trialDays && trialDays.length > 0 ? (
+        <div className="border rounded-lg overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>תאריך</TableHead>
+                <TableHead>שעת התחלה</TableHead>
+                <TableHead>שעת סיום</TableHead>
+                <TableHead>מקומות פנויים</TableHead>
+                <TableHead>עמדות</TableHead>
+                <TableHead>הערות</TableHead>
+                <TableHead>פעולות</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {trialDays.map((trialDay, index) => {
                 const associatedStations = getStationsForTrialDay(trialDay.id);
                 return (
-                  <TableRow key={trialDay.id}>
+                  <TableRow
+                    key={trialDay.id}
+                    className="hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors duration-150 animate-fade-in"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
                     <TableCell>{new Date(trialDay.date).toLocaleDateString("he-IL")}</TableCell>
                     <TableCell>{trialDay.start_time || "-"}</TableCell>
                     <TableCell>{trialDay.end_time || "-"}</TableCell>
@@ -269,15 +303,17 @@ export default function TrialDays() {
                           variant="outline"
                           size="sm"
                           onClick={() => handleOpenDialog(trialDay)}
+                          className="hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors duration-200 hover:scale-105 active:scale-95 transition-transform"
                         >
-                          <Edit2 className="w-4 h-4" />
+                          <Edit2 className="w-4 h-4 transition-transform duration-200" />
                         </Button>
                         <Button
                           variant="destructive"
                           size="sm"
                           onClick={() => handleDelete(trialDay.id)}
+                          className="hover:scale-105 active:scale-95 transition-transform"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-4 h-4 transition-transform duration-200" />
                         </Button>
                       </div>
                     </TableCell>
@@ -288,8 +324,8 @@ export default function TrialDays() {
           </Table>
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center p-12 border rounded-lg border-dashed">
-          <AlertCircle className="w-12 h-12 text-muted-foreground mb-4" />
+        <div className="flex flex-col items-center justify-center p-12 border rounded-lg border-dashed hover:border-slate-400 hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-all duration-300">
+          <AlertCircle className="w-12 h-12 text-muted-foreground mb-4 animate-pulse" />
           <p className="text-muted-foreground">אין ימי ניסוי מוגדרים</p>
         </div>
       )}

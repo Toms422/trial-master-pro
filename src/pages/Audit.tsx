@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertCircle } from "lucide-react";
 
@@ -131,10 +132,6 @@ export default function Audit() {
     return JSON.stringify(changes, null, 2).substring(0, 100) + "...";
   };
 
-  if (isLoading) {
-    return <div className="flex justify-center items-center h-screen">טוען...</div>;
-  }
-
   return (
     <div className="w-full p-6">
       <h1 className="text-3xl font-bold mb-6">לוג אודיט</h1>
@@ -143,76 +140,100 @@ export default function Audit() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
         <div>
           <Label htmlFor="filterTable">טבלה</Label>
-          <Select value={filterTable} onValueChange={setFilterTable}>
-            <SelectTrigger id="filterTable">
-              <SelectValue placeholder="בחר טבלה" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">כל הטבלאות</SelectItem>
-              {uniqueTables.map((table) => (
-                <SelectItem key={table} value={table}>
-                  {table}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {isLoading ? (
+            <Skeleton className="h-10 w-full" />
+          ) : (
+            <Select value={filterTable} onValueChange={setFilterTable}>
+              <SelectTrigger id="filterTable">
+                <SelectValue placeholder="בחר טבלה" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">כל הטבלאות</SelectItem>
+                {uniqueTables.map((table) => (
+                  <SelectItem key={table} value={table}>
+                    {table}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
 
         <div>
           <Label htmlFor="filterAction">פעולה</Label>
-          <Select value={filterAction} onValueChange={setFilterAction}>
-            <SelectTrigger id="filterAction">
-              <SelectValue placeholder="בחר פעולה" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">כל הפעולות</SelectItem>
-              {uniqueActions.map((action) => (
-                <SelectItem key={action} value={action}>
-                  {action}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {isLoading ? (
+            <Skeleton className="h-10 w-full" />
+          ) : (
+            <Select value={filterAction} onValueChange={setFilterAction}>
+              <SelectTrigger id="filterAction">
+                <SelectValue placeholder="בחר פעולה" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">כל הפעולות</SelectItem>
+                {uniqueActions.map((action) => (
+                  <SelectItem key={action} value={action}>
+                    {action}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
 
         <div>
           <Label htmlFor="searchUserId">משתמש</Label>
-          <Input
-            id="searchUserId"
-            placeholder="חפש משתמש..."
-            value={searchUserId}
-            onChange={(e) => setSearchUserId(e.target.value)}
-          />
+          {isLoading ? (
+            <Skeleton className="h-10 w-full" />
+          ) : (
+            <Input
+              id="searchUserId"
+              placeholder="חפש משתמש..."
+              value={searchUserId}
+              onChange={(e) => setSearchUserId(e.target.value)}
+            />
+          )}
         </div>
 
         <div>
           <Label htmlFor="startDate">מתאריך</Label>
-          <Input
-            id="startDate"
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-          />
+          {isLoading ? (
+            <Skeleton className="h-10 w-full" />
+          ) : (
+            <Input
+              id="startDate"
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+            />
+          )}
         </div>
 
         <div>
           <Label htmlFor="endDate">עד תאריך</Label>
-          <Input
-            id="endDate"
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-          />
+          {isLoading ? (
+            <Skeleton className="h-10 w-full" />
+          ) : (
+            <Input
+              id="endDate"
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+            />
+          )}
         </div>
       </div>
 
       {/* Results Summary */}
       <div className="mb-4 text-sm text-gray-600">
-        {filteredLogs.length} רשומות מתוך {auditLogs?.length || 0}
+        {isLoading ? (
+          <Skeleton className="h-4 w-32" />
+        ) : (
+          `${filteredLogs.length} רשומות מתוך ${auditLogs?.length || 0}`
+        )}
       </div>
 
       {/* Audit Log Table */}
-      {filteredLogs.length > 0 ? (
+      {isLoading ? (
         <div className="border rounded-lg overflow-hidden">
           <div className="overflow-x-auto">
             <Table>
@@ -227,8 +248,41 @@ export default function Audit() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredLogs.map((log) => (
-                  <TableRow key={log.id}>
+                {[0, 1, 2, 3, 4, 5].map((i) => (
+                  <TableRow key={i} className="animate-pulse">
+                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-28" /></TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      ) : filteredLogs.length > 0 ? (
+        <div className="border rounded-lg overflow-hidden">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>משתמש</TableHead>
+                  <TableHead>פעולה</TableHead>
+                  <TableHead>טבלה</TableHead>
+                  <TableHead>ID רשומה</TableHead>
+                  <TableHead>שינויים</TableHead>
+                  <TableHead>תאריך/שעה</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredLogs.map((log, index) => (
+                  <TableRow
+                    key={log.id}
+                    className="hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors duration-150 animate-fade-in"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
                     <TableCell>{getUserName(log.user_id)}</TableCell>
                     <TableCell className="font-medium">{log.action}</TableCell>
                     <TableCell>{log.table_name}</TableCell>

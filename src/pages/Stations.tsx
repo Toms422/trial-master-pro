@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Card,
   CardContent,
@@ -206,11 +207,29 @@ export default function Stations() {
       </div>
 
       {isLoading ? (
-        <div className="text-center py-12">טוען...</div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <Card key={i} className="animate-pulse">
+              <CardHeader>
+                <div className="space-y-2">
+                  <Skeleton className="h-6 w-32" />
+                  <Skeleton className="h-4 w-24" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-12 w-full" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {stations?.map((station) => (
-            <Card key={station.id}>
+          {stations?.map((station, index) => (
+            <Card
+              key={station.id}
+              className="hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer animate-fade-in"
+              style={{ animationDelay: `${index * 50}ms` }}
+            >
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle>{station.name}</CardTitle>
@@ -222,8 +241,9 @@ export default function Stations() {
                         setEditingStation(station);
                         setIsDialogOpen(true);
                       }}
+                      className="hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors duration-200"
                     >
-                      <Pencil className="h-4 w-4" />
+                      <Pencil className="h-4 w-4 transition-transform duration-200 group-hover:scale-110" />
                     </Button>
                     <Button
                       variant="ghost"
@@ -233,8 +253,9 @@ export default function Stations() {
                           deleteMutation.mutate(station.id);
                         }
                       }}
+                      className="hover:bg-red-100 dark:hover:bg-red-900 transition-colors duration-200"
                     >
-                      <Trash2 className="h-4 w-4 text-destructive" />
+                      <Trash2 className="h-4 w-4 text-destructive transition-transform duration-200 group-hover:scale-110" />
                     </Button>
                   </div>
                 </div>

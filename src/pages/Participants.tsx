@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertCircle, Plus, Edit2, Trash2, QrCode, CheckCircle, Download } from "lucide-react";
 import { toast } from "sonner";
@@ -373,7 +374,36 @@ export default function Participants() {
 
           {/* Participants Table */}
           {participantsLoading ? (
-            <div className="flex justify-center items-center p-12">טוען...</div>
+            <div className="border rounded-lg overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>שם מלא</TableHead>
+                    <TableHead>טלפון</TableHead>
+                    <TableHead>הגעה</TableHead>
+                    <TableHead>טופס</TableHead>
+                    <TableHead>ניסוי</TableHead>
+                    <TableHead>QR</TableHead>
+                    <TableHead>עמדה</TableHead>
+                    <TableHead>פעולות</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {[0, 1, 2, 3, 4].map((i) => (
+                    <TableRow key={i} className="animate-pulse">
+                      <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-12" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           ) : filteredParticipants.length > 0 ? (
             <div className="border rounded-lg overflow-hidden">
               <Table>
@@ -390,8 +420,12 @@ export default function Participants() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredParticipants.map((participant) => (
-                    <TableRow key={participant.id}>
+                  {filteredParticipants.map((participant, index) => (
+                    <TableRow
+                      key={participant.id}
+                      className="hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors duration-150 animate-fade-in"
+                      style={{ animationDelay: `${index * 50}ms` }}
+                    >
                       <TableCell className="font-medium">{participant.full_name}</TableCell>
                       <TableCell>{participant.phone}</TableCell>
                       <TableCell>{getStatusBadge(participant.arrived, participant.arrived_at)}</TableCell>
