@@ -12,6 +12,8 @@ import { AlertCircle, Plus, Edit2, Trash2, QrCode, CheckCircle, Download } from 
 import { toast } from "sonner";
 import ExcelImport from "@/components/participants/ExcelImport";
 import QRCodeDisplay from "@/components/participants/QRCodeDisplay";
+import AnimatedBadge from "@/components/AnimatedBadge";
+import AnimatedLoadingButton from "@/components/AnimatedLoadingButton";
 import { exportParticipantToINI } from "@/lib/iniExport";
 import { useAuditLog } from "@/hooks/useAuditLog";
 
@@ -312,14 +314,18 @@ export default function Participants() {
   const getStatusBadge = (status: boolean, timestamp?: string) => {
     if (status) {
       return (
-        <div className="flex items-center gap-2">
-          <CheckCircle className="w-4 h-4 text-green-600" />
-          <span className="text-sm text-green-600">כן</span>
-          {timestamp && <span className="text-xs text-gray-500">{new Date(timestamp).toLocaleString("he-IL")}</span>}
-        </div>
+        <AnimatedBadge variant="success">
+          <CheckCircle className="w-3 h-3" />
+          <span>כן</span>
+          {timestamp && <span className="text-xs ml-2">{new Date(timestamp).toLocaleString("he-IL")}</span>}
+        </AnimatedBadge>
       );
     }
-    return <span className="text-sm text-gray-500">לא</span>;
+    return (
+      <AnimatedBadge variant="default">
+        לא
+      </AnimatedBadge>
+    );
   };
 
   if (trialDaysLoading) {
@@ -548,9 +554,13 @@ export default function Participants() {
               <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
                 ביטול
               </Button>
-              <Button onClick={handleSave} disabled={upsertMutation.isPending}>
-                {upsertMutation.isPending ? "שומר..." : "שמור"}
-              </Button>
+              <AnimatedLoadingButton
+                isLoading={upsertMutation.isPending}
+                loadingText="שומר..."
+                onClick={handleSave}
+              >
+                שמור
+              </AnimatedLoadingButton>
             </div>
           </div>
         </DialogContent>
