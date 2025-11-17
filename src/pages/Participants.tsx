@@ -343,7 +343,16 @@ export default function Participants() {
             <Plus className="w-4 h-4 ml-2" />
             ייבוא Excel
           </Button>
-          <Button onClick={() => handleOpenDialog()}>
+          <Button
+            onClick={() => {
+              if (!selectedTrialDayId) {
+                toast.error("אנא בחר יום ניסוי קודם לכן");
+                return;
+              }
+              handleOpenDialog();
+            }}
+            disabled={!selectedTrialDayId}
+          >
             <Plus className="w-4 h-4 ml-2" />
             נסיין חדש
           </Button>
