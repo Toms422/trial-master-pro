@@ -31,7 +31,7 @@ export default function Audit() {
   const [endDate, setEndDate] = useState("");
 
   // Fetch audit logs
-  const { data: auditLogs, isLoading } = useQuery({
+  const { data: auditLogs, isLoading, isError, error } = useQuery({
     queryKey: ["audit-logs"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -45,7 +45,7 @@ export default function Audit() {
   });
 
   // Fetch user profiles for joining
-  const { data: profiles } = useQuery({
+  const { data: profiles, isError: isProfilesError } = useQuery({
     queryKey: ["profiles"],
     queryFn: async () => {
       const { data, error } = await supabase.from("profiles").select("id, full_name");
@@ -131,6 +131,22 @@ export default function Audit() {
     }
     return JSON.stringify(changes, null, 2).substring(0, 100) + "...";
   };
+
+  // Show error state if queries failed
+  if (isError || isProfilesError) {
+    return (
+      <div className="w-full p-6">
+        <h1 className="text-3xl font-bold mb-6">לוג אודיט</h1>
+        <div className="flex flex-col items-center justify-center p-12 border rounded-lg border-red-300 bg-red-50">
+          <AlertCircle className="w-12 h-12 text-red-600 mb-4" />
+          <p className="text-red-600 font-semibold">שגיאה בטעינת נתונים</p>
+          <p className="text-sm text-red-500 mt-2">
+            {error?.message || "אין לך הרשאות לצפות בלוג האודיט. אנא פנה למנהל המערכת."}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full p-6">
@@ -286,7 +302,7 @@ export default function Audit() {
                     <TableCell>{getUserName(log.user_id)}</TableCell>
                     <TableCell className="font-medium">{log.action}</TableCell>
                     <TableCell>{log.table_name}</TableCell>
-                    <TableCell className="font-mono text-xs">{log.record_id?.substring(0, 8) || "-"}...</TableCell>
+                    <TableCell className="font-mono text-xs">{log.record_id ? `${log.record_id.substring(0, 8)}...` : "-"}</TableCell>
                     <TableCell>
                       <code className="text-xs bg-gray-100 p-2 rounded block max-w-xs overflow-hidden text-ellipsis">
                         {formatChanges(log.changes)}
