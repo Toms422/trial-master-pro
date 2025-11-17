@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { TestTube } from "lucide-react";
+import { TestTube, Mail, Lock, User, Phone } from "lucide-react";
+import AnimatedLoadingButton from "@/components/AnimatedLoadingButton";
 import { z } from "zod";
 
 const authSchema = z.object({
@@ -96,7 +98,13 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-accent/10 p-4">
-      <Card className="w-full max-w-md">
+      <motion.div
+        className="w-full max-w-md"
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+      >
+        <Card className="w-full">
         <CardHeader className="text-center space-y-4">
           <div className="flex justify-center">
             <div className="bg-primary/10 p-4 rounded-full">
@@ -136,9 +144,14 @@ export default function Auth() {
                     disabled={isLoading}
                   />
                 </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "מתחבר..." : "התחבר"}
-                </Button>
+                <AnimatedLoadingButton
+                  type="submit"
+                  className="w-full"
+                  isLoading={isLoading}
+                  loadingText="מתחבר..."
+                >
+                  התחבר
+                </AnimatedLoadingButton>
               </form>
             </TabsContent>
             <TabsContent value="signup">
@@ -186,14 +199,20 @@ export default function Auth() {
                     disabled={isLoading}
                   />
                 </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "נרשם..." : "הירשם"}
-                </Button>
+                <AnimatedLoadingButton
+                  type="submit"
+                  className="w-full"
+                  isLoading={isLoading}
+                  loadingText="נרשם..."
+                >
+                  הירשם
+                </AnimatedLoadingButton>
               </form>
             </TabsContent>
           </Tabs>
         </CardContent>
       </Card>
+      </motion.div>
     </div>
   );
 }
