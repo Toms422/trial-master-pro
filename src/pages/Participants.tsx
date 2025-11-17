@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import ExcelImport from "@/components/participants/ExcelImport";
 import QRCodeDisplay from "@/components/participants/QRCodeDisplay";
 import { exportParticipantToINI } from "@/lib/iniExport";
+import { useAuditLog } from "@/hooks/useAuditLog";
 
 interface TrialDay {
   id: string;
@@ -56,6 +57,7 @@ interface Participant {
 
 export default function Participants() {
   const queryClient = useQueryClient();
+  const { logAction } = useAuditLog();
   const [selectedTrialDayId, setSelectedTrialDayId] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -131,7 +133,29 @@ export default function Participants() {
         if (error) throw error;
       }
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      // Log the action
+      try {
+        if (editingParticipant) {
+          await logAction({
+            action: 'updated',
+            tableName: 'participants',
+            recordId: editingParticipant.id,
+            changes: formData,
+          });
+        } else {
+          const participantId = editingParticipant?.id || 'new';
+          await logAction({
+            action: 'created',
+            tableName: 'participants',
+            recordId: participantId,
+            changes: formData,
+          });
+        }
+      } catch (err) {
+        console.error('Failed to log audit action:', err);
+      }
+
       queryClient.invalidateQueries({ queryKey: ["participants", selectedTrialDayId] });
       toast.success(editingParticipant ? "נסיין עודכן בהצלחה" : "נסיין נוסף בהצלחה");
       resetForm();
@@ -146,8 +170,21 @@ export default function Participants() {
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("participants").delete().eq("id", id);
       if (error) throw error;
+      return id;
     },
-    onSuccess: () => {
+    onSuccess: async (id) => {
+      // Log the action
+      try {
+        await logAction({
+          action: 'deleted',
+          tableName: 'participants',
+          recordId: id,
+          changes: {},
+        });
+      } catch (err) {
+        console.error('Failed to log audit action:', err);
+      }
+
       queryClient.invalidateQueries({ queryKey: ["participants", selectedTrialDayId] });
       toast.success("נסיין נמחק בהצלחה");
     },
@@ -169,8 +206,21 @@ export default function Participants() {
         })
         .eq("id", id);
       if (error) throw error;
+      return id;
     },
-    onSuccess: () => {
+    onSuccess: async (id) => {
+      // Log the action
+      try {
+        await logAction({
+          action: 'marked_arrived',
+          tableName: 'participants',
+          recordId: id,
+          changes: { arrived: true },
+        });
+      } catch (err) {
+        console.error('Failed to log audit action:', err);
+      }
+
       queryClient.invalidateQueries({ queryKey: ["participants", selectedTrialDayId] });
       toast.success("סמן בהצלחה");
     },
@@ -190,8 +240,21 @@ export default function Participants() {
         })
         .eq("id", id);
       if (error) throw error;
+      return id;
     },
-    onSuccess: () => {
+    onSuccess: async (id) => {
+      // Log the action
+      try {
+        await logAction({
+          action: 'updated',
+          tableName: 'participants',
+          recordId: id,
+          changes: { trial_completed: true },
+        });
+      } catch (err) {
+        console.error('Failed to log audit action:', err);
+      }
+
       queryClient.invalidateQueries({ queryKey: ["participants", selectedTrialDayId] });
       toast.success("סימון בוצע בהצלחה");
     },
