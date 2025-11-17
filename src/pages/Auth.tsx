@@ -13,10 +13,7 @@ import AnimatedLoadingButton from "@/components/AnimatedLoadingButton";
 import { z } from "zod";
 
 const authSchema = z.object({
-  email: z.string().min(1, { message: "דוא\"ל נדרש" }).refine(
-    (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/i.test(email),
-    { message: "כתובת דוא\"ל לא תקינה" }
-  ),
+  email: z.string().min(1, { message: "דוא\"ל נדרש" }).email({ message: "כתובת דוא\"ל לא תקינה" }),
   password: z.string().min(6, { message: "הסיסמה חייבת להכיל לפחות 6 תווים" }),
   fullName: z.string().min(2, { message: "שם מלא חייב להכיל לפחות 2 תווים" }).optional(),
   phone: z.string().optional(),
@@ -38,11 +35,12 @@ export default function Auth() {
 
     try {
       const validation = authSchema.parse({ email, password, fullName, phone });
-      
+      console.log("Validation passed, attempting signup with email:", validation.email);
+
       const redirectUrl = `${window.location.origin}/`;
-      
+
       const { error } = await supabase.auth.signUp({
-        email: validation.email,
+        email: validation.email.toLowerCase(),
         password: validation.password,
         options: {
           emailRedirectTo: redirectUrl,
@@ -53,11 +51,15 @@ export default function Auth() {
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase signup error:", error);
+        throw error;
+      }
 
       toast.success("נרשמת בהצלחה! מועבר לדף הבית...");
       setTimeout(() => navigate("/"), 1000);
     } catch (error: any) {
+      console.error("SignUp error:", error);
       if (error instanceof z.ZodError) {
         toast.error(error.errors[0].message);
       } else {
