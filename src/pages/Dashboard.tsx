@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { TestTube, Calendar, Users, ClipboardList, Shield, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import CheckInStatsWidget from "@/components/dashboard/CheckInStatsWidget";
+import ActivityFeed from "@/components/dashboard/ActivityFeed";
 
 export default function Dashboard() {
   const { user, isAdmin, isOperator } = useAuth();
@@ -15,6 +16,7 @@ export default function Dashboard() {
       href: "/stations",
       gradient: "from-blue-500 to-blue-600",
       bgLight: "bg-blue-50",
+      iconColor: "text-blue-600",
     },
     {
       title: "ימי ניסוי",
@@ -23,6 +25,7 @@ export default function Dashboard() {
       href: "/trial-days",
       gradient: "from-purple-500 to-purple-600",
       bgLight: "bg-purple-50",
+      iconColor: "text-purple-600",
     },
     {
       title: "נסיינים",
@@ -31,6 +34,7 @@ export default function Dashboard() {
       href: "/participants",
       gradient: "from-emerald-500 to-emerald-600",
       bgLight: "bg-emerald-50",
+      iconColor: "text-emerald-600",
     },
     {
       title: "יומן ביקורת",
@@ -39,6 +43,7 @@ export default function Dashboard() {
       href: "/audit",
       gradient: "from-amber-500 to-amber-600",
       bgLight: "bg-amber-50",
+      iconColor: "text-amber-600",
     },
     {
       title: "ניהול משתמשים",
@@ -47,6 +52,7 @@ export default function Dashboard() {
       href: "/admin",
       gradient: "from-red-500 to-red-600",
       bgLight: "bg-red-50",
+      iconColor: "text-red-600",
     },
   ];
 
@@ -58,6 +64,7 @@ export default function Dashboard() {
       href: "/trial-days",
       gradient: "from-purple-500 to-purple-600",
       bgLight: "bg-purple-50",
+      iconColor: "text-purple-600",
     },
     {
       title: "נסיינים",
@@ -66,6 +73,7 @@ export default function Dashboard() {
       href: "/participants",
       gradient: "from-emerald-500 to-emerald-600",
       bgLight: "bg-emerald-50",
+      iconColor: "text-emerald-600",
     },
   ];
 
@@ -90,37 +98,47 @@ export default function Dashboard() {
       {/* Real-time Stats Widget */}
       <CheckInStatsWidget />
 
-      {/* Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {cards.map((card) => {
-          const Icon = card.icon;
-          return (
-            <Link key={card.href} to={card.href} className="group">
-              <Card className="h-full overflow-hidden border-0 shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer">
-                {/* Color Bar */}
-                <div className={`h-1 bg-gradient-to-r ${card.gradient}`}></div>
+      {/* Activity Feed and Cards Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Activity Feed - Takes 1 column on large screens */}
+        <div className="lg:col-span-1">
+          <ActivityFeed />
+        </div>
 
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className={`${card.bgLight} p-3 rounded-lg group-hover:scale-110 transition-transform`}>
-                      <Icon className={`h-6 w-6 bg-gradient-to-br ${card.gradient} bg-clip-text text-transparent`} />
-                    </div>
-                    <ArrowLeft className="h-4 w-4 text-slate-400 group-hover:text-slate-600 group-hover:translate-x-1 transition-all" />
-                  </div>
-                  <CardTitle className="text-xl text-slate-900">{card.title}</CardTitle>
-                  <CardDescription className="text-slate-600 text-sm mt-2">
-                    {card.description}
-                  </CardDescription>
-                </CardHeader>
-              </Card>
-            </Link>
-          );
-        })}
+        {/* Cards Grid - Takes 2 columns on large screens */}
+        <div className="lg:col-span-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {cards.map((card) => {
+              const Icon = card.icon;
+              return (
+                <Link key={card.href} to={card.href} className="group">
+                  <Card className="h-full overflow-hidden border-0 shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer animate-fade-in">
+                    {/* Color Bar */}
+                    <div className={`h-1 bg-gradient-to-r ${card.gradient}`}></div>
+
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className={`${card.bgLight} p-3 rounded-lg group-hover:scale-110 transition-transform duration-300`}>
+                          <Icon className={`h-6 w-6 ${card.iconColor}`} strokeWidth={2} />
+                        </div>
+                        <ArrowLeft className="h-4 w-4 text-slate-400 group-hover:text-slate-600 group-hover:translate-x-1 transition-all duration-300" />
+                      </div>
+                      <CardTitle className="text-xl text-slate-900">{card.title}</CardTitle>
+                      <CardDescription className="text-slate-600 text-sm mt-2">
+                        {card.description}
+                      </CardDescription>
+                    </CardHeader>
+                  </Card>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       {/* No Permissions Message */}
       {!isAdmin && !isOperator && (
-        <Card className="border-0 shadow-md bg-gradient-to-br from-amber-50 to-orange-50">
+        <Card className="border-0 shadow-md bg-gradient-to-br from-amber-50 to-orange-50 animate-scale-in">
           <CardHeader>
             <CardTitle className="text-xl text-amber-900">⚠️ אין הרשאות</CardTitle>
             <CardDescription className="text-amber-800 text-base mt-2">
@@ -138,11 +156,11 @@ export default function Dashboard() {
         </div>
         <div className="text-center">
           <p className="text-3xl font-bold text-purple-600">24/7</p>
-          <p className="text-slate-600 text-sm">זמן הגדרה מערכת</p>
+          <p className="text-slate-600 text-sm">זמינות</p>
         </div>
         <div className="text-center">
           <p className="text-3xl font-bold text-emerald-600">99%</p>
-          <p className="text-slate-600 text-sm">זמן פעולה</p>
+          <p className="text-slate-600 text-sm">שביעות רצון</p>
         </div>
       </div>
     </div>
