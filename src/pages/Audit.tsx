@@ -34,23 +34,41 @@ export default function Audit() {
   const { data: auditLogs, isLoading, isError, error } = useQuery({
     queryKey: ["audit-logs"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("audit_log")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(1000);
-      if (error) throw error;
-      return data as AuditLog[];
+      try {
+        const { data, error } = await supabase
+          .from("audit_log")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(1000);
+        if (error) {
+          console.error("Error fetching audit logs:", error);
+          throw error;
+        }
+        console.log("Audit logs fetched:", data?.length);
+        return data as AuditLog[];
+      } catch (err) {
+        console.error("Exception in audit logs query:", err);
+        throw err;
+      }
     },
   });
 
   // Fetch user profiles for joining
-  const { data: profiles, isError: isProfilesError } = useQuery({
+  const { data: profiles, isError: isProfilesError, error: profilesError } = useQuery({
     queryKey: ["profiles"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("profiles").select("id, full_name");
-      if (error) throw error;
-      return data as UserProfile[];
+      try {
+        const { data, error } = await supabase.from("profiles").select("id, full_name");
+        if (error) {
+          console.error("Error fetching profiles:", error);
+          throw error;
+        }
+        console.log("Profiles fetched:", data?.length);
+        return data as UserProfile[];
+      } catch (err) {
+        console.error("Exception in profiles query:", err);
+        throw err;
+      }
     },
   });
 
@@ -134,6 +152,8 @@ export default function Audit() {
 
   // Show error state if queries failed
   if (isError || isProfilesError) {
+    const errorMsg = error?.message || profilesError?.message || "אין לך הרשאות לצפות בלוג האודיט. אנא פנה למנהל המערכת.";
+    console.error("Audit page error state - isError:", isError, "isProfilesError:", isProfilesError, "error:", error, "profilesError:", profilesError);
     return (
       <div className="w-full p-6">
         <h1 className="text-3xl font-bold mb-6">לוג אודיט</h1>
@@ -141,7 +161,7 @@ export default function Audit() {
           <AlertCircle className="w-12 h-12 text-red-600 mb-4" />
           <p className="text-red-600 font-semibold">שגיאה בטעינת נתונים</p>
           <p className="text-sm text-red-500 mt-2">
-            {error?.message || "אין לך הרשאות לצפות בלוג האודיט. אנא פנה למנהל המערכת."}
+            {errorMsg}
           </p>
         </div>
       </div>
