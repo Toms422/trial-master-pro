@@ -4,9 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface AuditLog {
   id: string;
@@ -23,12 +24,15 @@ interface UserProfile {
   full_name: string;
 }
 
+const ITEMS_PER_PAGE = 20;
+
 export default function Audit() {
   const [filterTable, setFilterTable] = useState("");
   const [filterAction, setFilterAction] = useState("");
   const [searchUserId, setSearchUserId] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Fetch audit logs
   const { data: auditLogs, isLoading, isError, error } = useQuery({
@@ -150,6 +154,20 @@ export default function Audit() {
     return JSON.stringify(changes, null, 2).substring(0, 100) + "...";
   };
 
+  // Pagination logic
+  const totalPages = Math.ceil(filteredLogs.length / ITEMS_PER_PAGE);
+  const paginatedLogs = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return filteredLogs.slice(startIndex, endIndex);
+  }, [filteredLogs, currentPage]);
+
+  // Reset to first page when filters change
+  const handleFilterChange = (setter: any, value: any) => {
+    setter(value);
+    setCurrentPage(1);
+  };
+
   // Show error state if queries failed
   if (isError || isProfilesError) {
     const errorMsg = error?.message || profilesError?.message || "אין לך הרשאות לצפות בלוג האודיט. אנא פנה למנהל המערכת.";
@@ -179,7 +197,7 @@ export default function Audit() {
           {isLoading ? (
             <Skeleton className="h-10 w-full" />
           ) : (
-            <Select value={filterTable || "all"} onValueChange={(val) => setFilterTable(val === "all" ? "" : val)}>
+            <Select value={filterTable || "all"} onValueChange={(val) => handleFilterChange(setFilterTable, val === "all" ? "" : val)}>
               <SelectTrigger id="filterTable">
                 <SelectValue placeholder="בחר טבלה" />
               </SelectTrigger>
@@ -200,7 +218,7 @@ export default function Audit() {
           {isLoading ? (
             <Skeleton className="h-10 w-full" />
           ) : (
-            <Select value={filterAction || "all"} onValueChange={(val) => setFilterAction(val === "all" ? "" : val)}>
+            <Select value={filterAction || "all"} onValueChange={(val) => handleFilterChange(setFilterAction, val === "all" ? "" : val)}>
               <SelectTrigger id="filterAction">
                 <SelectValue placeholder="בחר פעולה" />
               </SelectTrigger>
@@ -225,7 +243,7 @@ export default function Audit() {
               id="searchUserId"
               placeholder="חפש משתמש..."
               value={searchUserId}
-              onChange={(e) => setSearchUserId(e.target.value)}
+              onChange={(e) => handleFilterChange(setSearchUserId, e.target.value)}
             />
           )}
         </div>
@@ -239,7 +257,7 @@ export default function Audit() {
               id="startDate"
               type="date"
               value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
+              onChange={(e) => handleFilterChange(setStartDate, e.target.value)}
             />
           )}
         </div>
@@ -253,19 +271,30 @@ export default function Audit() {
               id="endDate"
               type="date"
               value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
+              onChange={(e) => handleFilterChange(setEndDate, e.target.value)}
             />
           )}
         </div>
       </div>
 
-      {/* Results Summary */}
-      <div className="mb-4 text-sm text-gray-600">
-        {isLoading ? (
-          <Skeleton className="h-4 w-32" />
-        ) : (
-          `${filteredLogs.length} רשומות מתוך ${auditLogs?.length || 0}`
-        )}
+      {/* Results Summary and Pagination Info */}
+      <div className="mb-4 flex justify-between items-center">
+        <div className="text-sm text-gray-600">
+          {isLoading ? (
+            <Skeleton className="h-4 w-32" />
+          ) : (
+            <>
+              {filteredLogs.length > 0 && (
+                <>
+                  מציג {(currentPage - 1) * ITEMS_PER_PAGE + 1}-{Math.min(currentPage * ITEMS_PER_PAGE, filteredLogs.length)} מתוך {filteredLogs.length} רשומות
+                  {auditLogs && filteredLogs.length !== auditLogs.length && (
+                    <span> (מסה"כ {auditLogs.length})</span>
+                  )}
+                </>
+              )}
+            </>
+          )}
+        </div>
       </div>
 
       {/* Audit Log Table */}
@@ -299,42 +328,75 @@ export default function Audit() {
           </div>
         </div>
       ) : filteredLogs.length > 0 ? (
-        <div className="border rounded-lg overflow-hidden">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>משתמש</TableHead>
-                  <TableHead>פעולה</TableHead>
-                  <TableHead>טבלה</TableHead>
-                  <TableHead>ID רשומה</TableHead>
-                  <TableHead>שינויים</TableHead>
-                  <TableHead>תאריך/שעה</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredLogs.map((log, index) => (
-                  <TableRow
-                    key={log.id}
-                    className="hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors duration-150 animate-fade-in"
-                    style={{ animationDelay: `${index * 50}ms` }}
-                  >
-                    <TableCell>{getUserName(log.user_id)}</TableCell>
-                    <TableCell className="font-medium">{log.action}</TableCell>
-                    <TableCell>{log.table_name}</TableCell>
-                    <TableCell className="font-mono text-xs">{log.record_id ? `${log.record_id.substring(0, 8)}...` : "-"}</TableCell>
-                    <TableCell>
-                      <code className="text-xs bg-gray-100 p-2 rounded block max-w-xs overflow-hidden text-ellipsis">
-                        {formatChanges(log.changes)}
-                      </code>
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap text-sm">{formatDate(log.created_at)}</TableCell>
+        <React.Fragment>
+          <div className="border rounded-lg overflow-hidden">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>משתמש</TableHead>
+                    <TableHead>פעולה</TableHead>
+                    <TableHead>טבלה</TableHead>
+                    <TableHead>ID רשומה</TableHead>
+                    <TableHead>שינויים</TableHead>
+                    <TableHead>תאריך/שעה</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {paginatedLogs.map((log, index) => (
+                    <TableRow
+                      key={log.id}
+                      className="hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors duration-150 animate-fade-in"
+                      style={{ animationDelay: `${index * 50}ms` }}
+                    >
+                      <TableCell>{getUserName(log.user_id)}</TableCell>
+                      <TableCell className="font-medium">{log.action}</TableCell>
+                      <TableCell>{log.table_name}</TableCell>
+                      <TableCell className="font-mono text-xs">{log.record_id ? `${log.record_id.substring(0, 8)}...` : "-"}</TableCell>
+                      <TableCell>
+                        <code className="text-xs bg-gray-100 p-2 rounded block max-w-xs overflow-hidden text-ellipsis">
+                          {formatChanges(log.changes)}
+                        </code>
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-sm">{formatDate(log.created_at)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </div>
-        </div>
+
+          {/* Pagination Controls */}
+          {filteredLogs.length > ITEMS_PER_PAGE && (
+            <div className="mt-6 flex items-center justify-between">
+              <div className="text-sm text-gray-600">
+                עמוד {currentPage} מתוך {totalPages}
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  aria-label="דף קודם"
+                >
+                  <ChevronLeft className="h-4 w-4 ml-1" />
+                  קודם
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                  aria-label="דף הבא"
+                >
+                  הבא
+                  <ChevronRight className="h-4 w-4 mr-1" />
+                </Button>
+              </div>
+            </div>
+          )}
+        </React.Fragment>
       ) : (
         <div className="flex flex-col items-center justify-center p-12 border rounded-lg border-dashed">
           <AlertCircle className="w-12 h-12 text-muted-foreground mb-4" />

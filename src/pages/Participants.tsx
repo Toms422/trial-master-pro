@@ -16,6 +16,7 @@ import AnimatedBadge from "@/components/AnimatedBadge";
 import AnimatedLoadingButton from "@/components/AnimatedLoadingButton";
 import { exportParticipantToINI } from "@/lib/iniExport";
 import { useAuditLog } from "@/hooks/useAuditLog";
+import { useDebounce } from "@/hooks/useDebounce";
 
 interface TrialDay {
   id: string;
@@ -63,6 +64,7 @@ export default function Participants() {
   const { logAction } = useAuditLog();
   const [selectedTrialDayId, setSelectedTrialDayId] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 300); // Debounce search with 300ms delay
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingParticipant, setEditingParticipant] = useState<Participant | null>(null);
   const [isExcelImportOpen, setIsExcelImportOpen] = useState(false);
@@ -117,10 +119,10 @@ export default function Participants() {
   const filteredParticipants = useMemo(() => {
     if (!allParticipants) return [];
     return allParticipants.filter((p) =>
-      p.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.phone.includes(searchQuery)
+      p.full_name.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
+      p.phone.includes(debouncedSearchQuery)
     );
-  }, [allParticipants, searchQuery]);
+  }, [allParticipants, debouncedSearchQuery]);
 
   // Create/Update participant mutation
   const upsertMutation = useMutation({
@@ -452,6 +454,7 @@ export default function Participants() {
                             variant="ghost"
                             size="sm"
                             onClick={() => handleShowQR(participant.qr_code)}
+                            aria-label={`הצג QR Code עבור ${participant.full_name}`}
                           >
                             <QrCode className="w-4 h-4" />
                           </Button>
@@ -468,6 +471,7 @@ export default function Participants() {
                               size="sm"
                               onClick={() => markArrivedMutation.mutate(participant.id)}
                               disabled={markArrivedMutation.isPending}
+                              aria-label={`סמן הגעה עבור ${participant.full_name}`}
                             >
                               ✓ הגעה
                             </Button>
@@ -478,6 +482,7 @@ export default function Participants() {
                               size="sm"
                               onClick={() => markTrialCompletedMutation.mutate(participant.id)}
                               disabled={markTrialCompletedMutation.isPending}
+                              aria-label={`סמן ניסוי כמושלם עבור ${participant.full_name}`}
                             >
                               ✓ ניסוי
                             </Button>
@@ -490,6 +495,7 @@ export default function Participants() {
                                 const trialDay = trialDays?.find((td) => td.id === participant.trial_day_id);
                                 exportParticipantToINI(participant, trialDay);
                               }}
+                              aria-label={`הורד נתוני ניסוי עבור ${participant.full_name}`}
                             >
                               <Download className="w-4 h-4" />
                             </Button>
@@ -498,6 +504,7 @@ export default function Participants() {
                             variant="outline"
                             size="sm"
                             onClick={() => handleOpenDialog(participant)}
+                            aria-label={`ערוך פרטים של ${participant.full_name}`}
                           >
                             <Edit2 className="w-4 h-4" />
                           </Button>
@@ -505,6 +512,7 @@ export default function Participants() {
                             variant="destructive"
                             size="sm"
                             onClick={() => handleDelete(participant.id)}
+                            aria-label={`מחק את ${participant.full_name}`}
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
@@ -542,11 +550,15 @@ export default function Participants() {
             </div>
 
             <div>
-              <Label htmlFor="phone">טלפון*</Label>
+              <Label htmlFor="phone">טלפון* (פורמט: 050-1234567)</Label>
               <Input
                 id="phone"
+                type="tel"
+                placeholder="050-1234567"
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                pattern="^(?:0[1-9]\d{1}-?\d{7}|0[1-9]\d{8})$"
+                title="אנא הזן מספר טלפון תקני (תחילת קידומת עם 0)"
               />
             </div>
 

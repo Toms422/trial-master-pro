@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertCircle, Plus, Edit2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { useDebounce } from "@/hooks/useDebounce";
 
 interface UserProfile {
   id: string;
@@ -31,6 +32,7 @@ export default function Admin() {
   const [formData, setFormData] = useState({ email: "", full_name: "", phone: "", password: "" });
   const [selectedRoles, setSelectedRoles] = useState<Array<"admin" | "operator" | "qa_viewer">>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 300); // Debounce search with 300ms delay
 
   // Fetch all users (profiles)
   const { data: profiles, isLoading: profilesLoading } = useQuery({
@@ -73,10 +75,10 @@ export default function Admin() {
     if (!profiles) return [];
     return profiles.filter(
       (p) =>
-        p.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.phone?.includes(searchQuery)
+        p.full_name.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
+        p.phone?.includes(debouncedSearchQuery)
     );
-  }, [profiles, searchQuery]);
+  }, [profiles, debouncedSearchQuery]);
 
   // Add/Update user mutation
   const upsertUserMutation = useMutation({
@@ -276,6 +278,7 @@ export default function Admin() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleOpenDialog(profile)}
+                        aria-label={`ערוך פרטים של ${profile.full_name}`}
                       >
                         <Edit2 className="w-4 h-4" />
                       </Button>
@@ -283,6 +286,7 @@ export default function Admin() {
                         variant="destructive"
                         size="sm"
                         onClick={() => handleDelete(profile.id)}
+                        aria-label={`מחק את ${profile.full_name}`}
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>

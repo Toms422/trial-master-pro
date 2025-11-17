@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,20 @@ export function Layout({ children }: LayoutProps) {
   const { user, userRoles, signOut } = useAuth();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Handle Escape key to close mobile menu
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && mobileMenuOpen) {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    if (mobileMenuOpen) {
+      document.addEventListener("keydown", handleEscape);
+      return () => document.removeEventListener("keydown", handleEscape);
+    }
+  }, [mobileMenuOpen]);
 
   if (!user) return <>{children}</>;
 
@@ -105,6 +119,9 @@ export function Layout({ children }: LayoutProps) {
                 size="sm"
                 className="md:hidden"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                aria-label={mobileMenuOpen ? "סגור תפריט ניווט" : "פתח תפריט ניווט"}
+                aria-expanded={mobileMenuOpen}
+                aria-controls="mobile-menu"
               >
                 {mobileMenuOpen ? (
                   <X className="h-5 w-5" />
@@ -117,7 +134,12 @@ export function Layout({ children }: LayoutProps) {
 
           {/* Mobile Navigation */}
           {mobileMenuOpen && (
-            <div className="md:hidden border-t border-slate-200 py-3 space-y-2">
+            <nav
+              id="mobile-menu"
+              className="md:hidden border-t border-slate-200 py-3 space-y-2"
+              role="navigation"
+              aria-label="תפריט ניווט לנייד"
+            >
               {filteredNavItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = location.pathname === item.href;
@@ -140,7 +162,7 @@ export function Layout({ children }: LayoutProps) {
                   </Link>
                 );
               })}
-            </div>
+            </nav>
           )}
         </div>
       </nav>

@@ -204,6 +204,20 @@ export default function TrialDays() {
       return;
     }
 
+    // Validate time range if both times are provided
+    if (formData.start_time && formData.end_time) {
+      if (formData.start_time >= formData.end_time) {
+        toast.error("שעת ההתחלה חייבת להיות לפני שעת הסיום");
+        return;
+      }
+    }
+
+    // Validate available slots is positive
+    if (formData.available_slots < 0) {
+      toast.error("מספר המקומות הפנויים חייב להיות חיובי");
+      return;
+    }
+
     if (editingTrialDay) {
       updateMutation.mutate({ ...editingTrialDay, ...formData });
     } else {
@@ -304,6 +318,7 @@ export default function TrialDays() {
                           size="sm"
                           onClick={() => handleOpenDialog(trialDay)}
                           className="hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors duration-200 hover:scale-105 active:scale-95 transition-transform"
+                          aria-label={`ערוך את יום הניסוי של ${new Date(trialDay.date).toLocaleDateString("he-IL")}`}
                         >
                           <Edit2 className="w-4 h-4 transition-transform duration-200" />
                         </Button>
@@ -312,6 +327,7 @@ export default function TrialDays() {
                           size="sm"
                           onClick={() => handleDelete(trialDay.id)}
                           className="hover:scale-105 active:scale-95 transition-transform"
+                          aria-label={`מחק את יום הניסוי של ${new Date(trialDay.date).toLocaleDateString("he-IL")}`}
                         >
                           <Trash2 className="w-4 h-4 transition-transform duration-200" />
                         </Button>
@@ -338,10 +354,11 @@ export default function TrialDays() {
 
           <div className="space-y-4">
             <div>
-              <Label htmlFor="date">תאריך*</Label>
+              <Label htmlFor="date">תאריך* (מהיום או בעתיד)</Label>
               <Input
                 id="date"
                 type="date"
+                min={new Date().toISOString().split('T')[0]}
                 value={formData.date}
                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
               />

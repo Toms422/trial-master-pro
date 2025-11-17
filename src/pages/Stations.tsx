@@ -27,8 +27,8 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 const stationSchema = z.object({
-  name: z.string().min(2, "שם חייב להכיל לפחות 2 תווים"),
-  capacity: z.number().min(1, "קיבולת חייבת להיות לפחות 1"),
+  name: z.string().min(2, "שם חייב להכיל לפחות 2 תווים").max(100, "שם חייב להכיל עד 100 תווים"),
+  capacity: z.number().min(1, "קיבולת חייבת להיות לפחות 1").max(1000, "קיבולת לא יכולה להיות יותר מ-1000"),
   description: z.string().optional(),
 });
 
@@ -242,6 +242,7 @@ export default function Stations() {
                         setIsDialogOpen(true);
                       }}
                       className="hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors duration-200"
+                      aria-label={`ערוך את העמדה ${station.name}`}
                     >
                       <Pencil className="h-4 w-4 transition-transform duration-200 group-hover:scale-110" />
                     </Button>
@@ -254,6 +255,7 @@ export default function Stations() {
                         }
                       }}
                       className="hover:bg-red-100 dark:hover:bg-red-900 transition-colors duration-200"
+                      aria-label={`מחק את העמדה ${station.name}`}
                     >
                       <Trash2 className="h-4 w-4 text-destructive transition-transform duration-200 group-hover:scale-110" />
                     </Button>
