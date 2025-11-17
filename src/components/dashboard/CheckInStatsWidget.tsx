@@ -19,14 +19,39 @@ export default function CheckInStatsWidget() {
     completedForms: 0,
   });
 
-  // Fetch participants data
+  // Fetch participants data for today only
   const { data: participants } = useQuery({
     queryKey: ["participants-stats"],
     queryFn: async () => {
+      // Get today's date in YYYY-MM-DD format
+      const today = new Date().toISOString().split('T')[0];
+
       const { data, error } = await supabase
         .from("participants")
-        .select("arrived, form_completed");
-      
+        .select("arrived, form_completed, trial_day_id")
+        .then(async (result) => {
+          if (result.error) throw result.error;
+
+          // Get today's trial day ID
+          const { data: trialDays } = await supabase
+            .from("trial_days")
+            .select("id")
+            .eq("date", today);
+
+          if (!trialDays || trialDays.length === 0) {
+            return { data: [] };
+          }
+
+          const todayTrialDayIds = trialDays.map(td => td.id);
+
+          // Filter participants for today's trial days
+          const todayParticipants = result.data?.filter(p =>
+            todayTrialDayIds.includes(p.trial_day_id)
+          ) || [];
+
+          return { data: todayParticipants };
+        });
+
       if (error) throw error;
       return data;
     },
@@ -58,14 +83,34 @@ export default function CheckInStatsWidget() {
         },
         () => {
           // Trigger refetch when any change occurs
+          const today = new Date().toISOString().split('T')[0];
+
           supabase
             .from("participants")
-            .select("arrived, form_completed")
-            .then(({ data }) => {
-              if (data) {
-                const total = data.length;
-                const checkedIn = data.filter(p => p.arrived).length;
-                const completedForms = data.filter(p => p.form_completed).length;
+            .select("arrived, form_completed, trial_day_id")
+            .then(async (result) => {
+              if (result.data) {
+                // Get today's trial day ID
+                const { data: trialDays } = await supabase
+                  .from("trial_days")
+                  .select("id")
+                  .eq("date", today);
+
+                if (!trialDays || trialDays.length === 0) {
+                  setStats({ total: 0, checkedIn: 0, pending: 0, completedForms: 0 });
+                  return;
+                }
+
+                const todayTrialDayIds = trialDays.map(td => td.id);
+
+                // Filter participants for today's trial days
+                const todayParticipants = result.data.filter(p =>
+                  todayTrialDayIds.includes(p.trial_day_id)
+                );
+
+                const total = todayParticipants.length;
+                const checkedIn = todayParticipants.filter(p => p.arrived).length;
+                const completedForms = todayParticipants.filter(p => p.form_completed).length;
                 const pending = total - checkedIn;
                 setStats({ total, checkedIn, pending, completedForms });
               }
@@ -119,7 +164,7 @@ export default function CheckInStatsWidget() {
       <CardHeader className="pb-3">
         <CardTitle className="text-2xl text-slate-900">סטטיסטיקת צ'ק-אין</CardTitle>
         <CardDescription className="text-slate-600">
-          עדכון בזמן אמת • נתונים מכל ימי הניסוי
+          עדכון בזמן אמת • נתונים של היום בלבד
         </CardDescription>
       </CardHeader>
       <CardContent>
