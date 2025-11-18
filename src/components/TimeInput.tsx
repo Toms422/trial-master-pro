@@ -50,9 +50,9 @@ export const TimeInput: React.FC<TimeInputProps> = ({ id, label, value, onChange
           value={displayValue}
           onChange={handleTextChange}
           placeholder="HH:mm"
-          maxLength="5"
+          maxLength={5}
           style={{
-            flex: 1,
+            flex: '1',
             padding: '0.5rem',
             border: '1px solid #e5e7eb',
             borderRadius: '0.375rem',
