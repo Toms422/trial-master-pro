@@ -41,7 +41,7 @@ const getHebrewMessage = (
   customMessage?: string,
   qrId?: string
 ): string => {
-  const formLink = qrId ? `\n\n${window.location.origin}/check-in/${qrId}` : '';
+  const formLink = qrId ? `\n\nקישור הטופס:\n${window.location.origin}/check-in/${qrId}` : '';
 
   switch (type) {
     case 'check_in_confirmation':
