@@ -275,19 +275,55 @@ export default function Participants() {
         })
         .eq("id", id);
       if (error) throw error;
-      return id;
+
+      // Fetch participant to get phone and name for WhatsApp message
+      const { data: participant } = await supabase
+        .from("participants")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      return { id, qrId, participant };
     },
-    onSuccess: async (id) => {
+    onSuccess: async (data) => {
+      const { id, qrId, participant } = data;
+
       // Log the action
       try {
         await logAction({
           action: 'marked_arrived',
           table_name: 'participants',
           record_id: id,
-          changes: { arrived: true },
+          changes: { arrived: true, qr_code: qrId },
         });
       } catch (err) {
         console.error('Failed to log audit action:', err);
+      }
+
+      // Send WhatsApp message with check-in form link
+      if (participant?.phone) {
+        try {
+          sendWhatsAppMessage({
+            phoneNumber: participant.phone,
+            participantName: participant.full_name,
+            messageType: 'check_in_confirmation',
+            qrId: qrId,
+          });
+
+          // Log WhatsApp message initiation
+          try {
+            await logAction({
+              action: 'whatsapp_sent',
+              table_name: 'participants',
+              record_id: id,
+              changes: { phoneNumber: participant.phone, messageType: 'check_in_confirmation', qrId: qrId },
+            });
+          } catch (auditErr) {
+            console.error('Failed to log WhatsApp audit action:', auditErr);
+          }
+        } catch (whatsappErr) {
+          console.error('Failed to send WhatsApp message:', whatsappErr);
+        }
       }
 
       queryClient.invalidateQueries({ queryKey: ["participants", selectedTrialDayId] });

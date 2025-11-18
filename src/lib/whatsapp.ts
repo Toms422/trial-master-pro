@@ -46,11 +46,9 @@ const getHebrewMessage = (
   switch (type) {
     case 'check_in_confirmation':
       return (
-        `שלום ${participantName}! ✅\n\n` +
-        `תודה שמילאת את טופס ההרשמה לניסוי.\n` +
-        `פרטיך נקלטו בהצלחה במערכת.${formLink}\n\n` +
-        `נתראה בקרוב!\n` +
-        `צוות Trial Master Pro 🔬`
+        `שלום ${participantName},\n\n` +
+        `בבקשה תמלא את הטופס המצורף:${formLink}\n\n` +
+        `צוות Trial Master Pro 📅`
       );
 
     case 'trial_reminder':
