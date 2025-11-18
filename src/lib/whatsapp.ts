@@ -56,7 +56,7 @@ const getHebrewMessage = (
     case 'trial_reminder':
       return (
         `שלום ${participantName},\n\n` +
-        `זוהי תזכורת לניסוי שלך מחר.\n` +
+        `אתה מוזמן להגיע לניסוי.\n` +
         `נא להגיע בזמן.${formLink}\n\n` +
         `צוות Trial Master Pro 📅`
       );
