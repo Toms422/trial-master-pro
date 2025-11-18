@@ -29,6 +29,7 @@ import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 
 const stationSchema = z.object({
   name: z.string().min(2, "שם חייב להכיל לפחות 2 תווים").max(100, "שם חייב להכיל עד 100 תווים"),
+  capacity: z.number().min(1, "קיבולת חייבת להיות לפחות 1"),
   description: z.string().optional(),
 });
 
@@ -126,8 +127,9 @@ export default function Stations() {
     try {
       const stationData = stationSchema.parse({
         name: formData.get("name") as string,
+        capacity: parseInt(formData.get("capacity") as string) || 0,
         description: formData.get("description") as string,
-      }) as { name: string; description?: string };
+      }) as { name: string; capacity: number; description?: string };
 
       if (editingStation) {
         updateMutation.mutate({ id: editingStation.id, ...stationData });
@@ -174,6 +176,17 @@ export default function Stations() {
                     id="name"
                     name="name"
                     defaultValue={editingStation?.name}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="capacity">קיבולת</Label>
+                  <Input
+                    id="capacity"
+                    name="capacity"
+                    type="number"
+                    min="1"
+                    defaultValue={editingStation?.capacity}
                     required
                   />
                 </div>
