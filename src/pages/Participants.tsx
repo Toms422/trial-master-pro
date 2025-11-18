@@ -811,6 +811,7 @@ export default function Participants() {
                                 phoneNumber: participant.phone,
                                 participantName: participant.full_name,
                                 messageType: 'trial_reminder',
+                                qrId: participant.qr_code, // Include QR code for form link
                               });
                             }}
                             aria-label={`שלח WhatsApp ל${participant.full_name}`}
