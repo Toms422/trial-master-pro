@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { AlertCircle, Plus, Edit2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
+import { DateInput } from "@/components/DateInput";
 import { TimeInput } from "@/components/TimeInput";
 
 interface TrialDay {
@@ -356,16 +357,13 @@ export default function TrialDays() {
           </DialogHeader>
 
           <div className="space-y-4">
-            <div>
-              <Label htmlFor="date">תאריך* (מהיום או בעתיד)</Label>
-              <Input
-                id="date"
-                type="date"
-                min={new Date().toISOString().split('T')[0]}
-                value={formData.date}
-                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-              />
-            </div>
+            <DateInput
+              id="date"
+              label="תאריך* (מהיום או בעתיד)"
+              value={formData.date}
+              onChange={(value) => setFormData({ ...formData, date: value })}
+              minDate={new Date().toISOString().split('T')[0]}
+            />
 
             <div className="grid grid-cols-2 gap-4">
               <TimeInput
