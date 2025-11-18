@@ -1,7 +1,10 @@
 /**
  * WhatsApp messaging utilities for Trial Master Pro
- * Phase 1: Uses wa.me click-to-chat links (user clicks send)
+ * Phase 1: Uses WhatsApp Web click-to-chat links (user clicks send)
  * Phase 2: Can upgrade to WhatsApp Business API for full automation
+ *
+ * Note: Automatic message sending is not supported by WhatsApp for security reasons.
+ * Users must manually click "Send" button in the WhatsApp Web interface.
  */
 
 export interface WhatsAppMessage {
@@ -62,11 +65,14 @@ const getHebrewMessage = (
 };
 
 /**
- * Open WhatsApp Web/App with pre-filled Hebrew message
+ * Open WhatsApp Web with pre-filled Hebrew message
  * User must click "Send" button to complete the action
  *
- * Uses wa.me click-to-chat link format:
- * https://wa.me/[phone]?text=[message]
+ * Uses WhatsApp Web link format:
+ * https://web.whatsapp.com/send/?phone=[phone]&text=[message]&type=phone_number&app_absent=0
+ *
+ * Note: Automatic message sending is not supported by WhatsApp for security reasons.
+ * User must manually click the "Send" button.
  *
  * @param phoneNumber Israeli format (050-xxx) or international (+972xxx)
  * @param participantName Name to personalize message
@@ -83,9 +89,9 @@ export const sendWhatsAppMessage = ({
     const formattedPhone = formatPhoneNumber(phoneNumber);
     const message = getHebrewMessage(messageType, participantName, customMessage);
     const encodedMessage = encodeURIComponent(message);
-    const url = `https://wa.me/${formattedPhone}?text=${encodedMessage}`;
+    const url = `https://web.whatsapp.com/send/?phone=${formattedPhone}&text=${encodedMessage}&type=phone_number&app_absent=0`;
 
-    // Open WhatsApp in new tab
+    // Open WhatsApp Web in new tab
     window.open(url, '_blank');
   } catch (error) {
     console.error('Failed to send WhatsApp message:', error);
@@ -94,7 +100,7 @@ export const sendWhatsAppMessage = ({
 };
 
 /**
- * Generate WhatsApp URL without opening
+ * Generate WhatsApp Web URL without opening
  * Useful for displaying link in UI or in chat messages
  */
 export const getWhatsAppLink = ({
@@ -106,7 +112,7 @@ export const getWhatsAppLink = ({
   const formattedPhone = formatPhoneNumber(phoneNumber);
   const message = getHebrewMessage(messageType, participantName, customMessage);
   const encodedMessage = encodeURIComponent(message);
-  return `https://wa.me/${formattedPhone}?text=${encodedMessage}`;
+  return `https://web.whatsapp.com/send/?phone=${formattedPhone}&text=${encodedMessage}&type=phone_number&app_absent=0`;
 };
 
 /**
