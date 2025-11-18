@@ -168,9 +168,16 @@ export default function Participants() {
   const upsertMutation = useMutation({
     mutationFn: async (participant: Partial<Participant> & { full_name: string; phone: string; trial_day_id: string }) => {
       if (editingParticipant) {
+        // For updates, only update specific fields (exclude trial_day_id)
+        const updateData = {
+          full_name: participant.full_name,
+          phone: participant.phone,
+          notes: participant.notes,
+          station_id: participant.station_id,
+        };
         const { error } = await supabase
           .from("participants")
-          .update(participant)
+          .update(updateData)
           .eq("id", editingParticipant.id);
         if (error) throw error;
       } else {
