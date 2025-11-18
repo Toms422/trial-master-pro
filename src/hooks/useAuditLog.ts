@@ -20,13 +20,13 @@ export function useAuditLog() {
       }
 
       try {
-        const { error } = await supabase.from('audit_log').insert({
+        const { error } = await supabase.from('audit_log').insert([{
           user_id: user.id,
           action: entry.action,
           table_name: entry.table_name,
           record_id: entry.record_id,
-          changes: entry.changes || null,
-        });
+          changes: (entry.changes as any) || null,
+        }]);
 
         if (error) {
           console.error('Error logging audit action:', error);
