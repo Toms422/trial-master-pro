@@ -970,7 +970,7 @@ export default function Participants() {
                   <SelectItem value="unassigned">אף עמדה</SelectItem>
                   {stations?.map((station) => (
                     <SelectItem key={station.id} value={station.id}>
-                      {station.name} (קיבולת: {station.capacity})
+                      {station.name}
                     </SelectItem>
                   ))}
                 </SelectContent>

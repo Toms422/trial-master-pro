@@ -231,10 +231,12 @@ export default function CheckIn() {
     );
   }
 
+  const isHebrewOrArabic = i18n.language === 'he' || i18n.language === 'ar';
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 py-8 px-4 flex items-center justify-center">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 py-8 px-4 flex items-center justify-center" dir={isHebrewOrArabic ? 'rtl' : 'ltr'}>
       <div className="max-w-2xl w-full">
-        <div className="bg-white rounded-2xl shadow-2xl p-8 md:p-12 mb-6">
+        <div className="bg-white rounded-2xl shadow-2xl p-8 md:p-12 mb-6" dir={isHebrewOrArabic ? 'rtl' : 'ltr'}>
           {/* Language Switcher */}
           <div className="flex justify-end mb-6">
             <LanguageSwitcher />
@@ -280,19 +282,6 @@ export default function CheckIn() {
                 className="mt-2 border-slate-300 focus:border-blue-500 focus:ring-blue-500"
               />
               {errors.age && <p className="text-red-600 text-sm mt-2 font-medium">{errors.age.message}</p>}
-            </div>
-
-            {/* Birth Date */}
-            <div>
-              <Label htmlFor="birth_date" className="text-slate-900 font-semibold flex items-center gap-1">
-                📅 {t("checkIn.form.birthDate")}
-              </Label>
-              <Input
-                id="birth_date"
-                type="date"
-                {...register("birth_date")}
-                className="mt-2 border-slate-300 focus:border-blue-500 focus:ring-blue-500"
-              />
             </div>
 
             {/* Weight */}
@@ -357,34 +346,6 @@ export default function CheckIn() {
                 id="skin_color"
                 {...register("skin_color")}
                 placeholder={t("checkIn.form.skinColor")}
-                className="mt-2 border-slate-300 focus:border-blue-500 focus:ring-blue-500"
-              />
-            </div>
-
-            {/* Allergies */}
-            <div>
-              <Label htmlFor="allergies" className="text-slate-900 font-semibold flex items-center gap-1">
-                ⚠️ {t("checkIn.form.allergies")}
-              </Label>
-              <Textarea
-                id="allergies"
-                {...register("allergies")}
-                placeholder={t("checkIn.form.allergies")}
-                rows={3}
-                className="mt-2 border-slate-300 focus:border-blue-500 focus:ring-blue-500"
-              />
-            </div>
-
-            {/* Notes */}
-            <div>
-              <Label htmlFor="notes" className="text-slate-900 font-semibold flex items-center gap-1">
-                📝 {t("checkIn.form.notes")}
-              </Label>
-              <Textarea
-                id="notes"
-                {...register("notes")}
-                placeholder={t("checkIn.form.notes")}
-                rows={3}
                 className="mt-2 border-slate-300 focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
