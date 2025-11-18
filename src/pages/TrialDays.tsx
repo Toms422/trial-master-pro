@@ -10,8 +10,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { AlertCircle, Plus, Edit2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
-import { DateInput } from "@/components/DateInput";
-import { TimeInput } from "@/components/TimeInput";
 
 interface TrialDay {
   id: string;
@@ -357,27 +355,36 @@ export default function TrialDays() {
           </DialogHeader>
 
           <div className="space-y-4">
-            <DateInput
-              id="date"
-              label="תאריך* (מהיום או בעתיד)"
-              value={formData.date}
-              onChange={(value) => setFormData({ ...formData, date: value })}
-              minDate={new Date().toISOString().split('T')[0]}
-            />
+            <div>
+              <Label htmlFor="date">תאריך* (מהיום או בעתיד)</Label>
+              <Input
+                id="date"
+                type="date"
+                min={new Date().toISOString().split('T')[0]}
+                value={formData.date}
+                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+              />
+            </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <TimeInput
-                id="start_time"
-                label="שעת התחלה"
-                value={formData.start_time}
-                onChange={(value) => setFormData({ ...formData, start_time: value })}
-              />
-              <TimeInput
-                id="end_time"
-                label="שעת סיום"
-                value={formData.end_time}
-                onChange={(value) => setFormData({ ...formData, end_time: value })}
-              />
+              <div>
+                <Label htmlFor="start_time">שעת התחלה</Label>
+                <Input
+                  id="start_time"
+                  type="time"
+                  value={formData.start_time}
+                  onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label htmlFor="end_time">שעת סיום</Label>
+                <Input
+                  id="end_time"
+                  type="time"
+                  value={formData.end_time}
+                  onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
+                />
+              </div>
             </div>
 
             <div>
