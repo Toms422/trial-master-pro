@@ -169,9 +169,10 @@ export default function Participants() {
     mutationFn: async (participant: Partial<Participant> & { full_name: string; phone: string; trial_day_id: string }) => {
       if (editingParticipant) {
         // For updates, only update specific fields (exclude trial_day_id)
+        // Ensure phone is treated as text string, not UUID
         const updateData = {
           full_name: participant.full_name,
-          phone: participant.phone,
+          phone: String(participant.phone || ""),
           notes: participant.notes,
           station_id: participant.station_id,
         };
@@ -179,7 +180,11 @@ export default function Participants() {
           .from("participants")
           .update(updateData)
           .eq("id", editingParticipant.id);
-        if (error) throw error;
+        if (error) {
+          console.error('Supabase update error:', error);
+          console.error('Update data:', updateData);
+          throw error;
+        }
       } else {
         const { error } = await supabase.from("participants").insert([participant]);
         if (error) throw error;
@@ -342,8 +347,16 @@ export default function Participants() {
       return;
     }
 
+    // Ensure phone is a valid string format
+    const phoneStr = String(formData.phone).trim();
+    if (!phoneStr) {
+      toast.error("מספר טלפון לא תקין");
+      return;
+    }
+
     upsertMutation.mutate({
       ...formData,
+      phone: phoneStr,
       trial_day_id: selectedTrialDayId,
     });
   };
