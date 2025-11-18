@@ -146,6 +146,7 @@ export default function CheckIn() {
             phoneNumber: participant.phone,
             participantName: participant.full_name,
             messageType: 'check_in_confirmation',
+            qrId: qrId, // Include QR ID so form link is added to message
           });
 
           // Log WhatsApp message initiation
@@ -154,7 +155,7 @@ export default function CheckIn() {
               action: 'whatsapp_sent',
               table_name: 'participants',
               record_id: participant.id,
-              changes: { phoneNumber: participant.phone, messageType: 'check_in_confirmation' },
+              changes: { phoneNumber: participant.phone, messageType: 'check_in_confirmation', qrId: qrId },
             });
           } catch (auditErr) {
             console.error('Failed to log WhatsApp audit action:', auditErr);

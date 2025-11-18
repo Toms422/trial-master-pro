@@ -12,6 +12,7 @@ export interface WhatsAppMessage {
   participantName: string;
   messageType?: 'check_in_confirmation' | 'trial_reminder' | 'custom';
   customMessage?: string;
+  qrId?: string; // Optional QR code ID for check-in form link
 }
 
 /**
@@ -32,18 +33,22 @@ const formatPhoneNumber = (phone: string): string => {
 
 /**
  * Get Hebrew message template based on message type
+ * Includes form link if QR ID is provided
  */
 const getHebrewMessage = (
   type: string,
   participantName: string,
-  customMessage?: string
+  customMessage?: string,
+  qrId?: string
 ): string => {
+  const formLink = qrId ? `\n\nטופס הרשמה: ${window.location.origin}/check-in/${qrId}` : '';
+
   switch (type) {
     case 'check_in_confirmation':
       return (
         `שלום ${participantName}! ✅\n\n` +
         `תודה שמילאת את טופס ההרשמה לניסוי.\n` +
-        `פרטיך נקלטו בהצלחה במערכת.\n\n` +
+        `פרטיך נקלטו בהצלחה במערכת.${formLink}\n\n` +
         `נתראה בקרוב!\n` +
         `צוות Trial Master Pro 🔬`
       );
@@ -52,15 +57,15 @@ const getHebrewMessage = (
       return (
         `שלום ${participantName},\n\n` +
         `זוהי תזכורת לניסוי שלך מחר.\n` +
-        `נא להגיע בזמן.\n\n` +
+        `נא להגיע בזמן.${formLink}\n\n` +
         `צוות Trial Master Pro 📅`
       );
 
     case 'custom':
-      return customMessage || `שלום ${participantName}`;
+      return (customMessage || `שלום ${participantName}`) + formLink;
 
     default:
-      return `שלום ${participantName}`;
+      return `שלום ${participantName}` + formLink;
   }
 };
 
@@ -78,16 +83,18 @@ const getHebrewMessage = (
  * @param participantName Name to personalize message
  * @param messageType Type of message template to use
  * @param customMessage Custom message (only used if messageType='custom')
+ * @param qrId Optional QR code ID to include form link in message
  */
 export const sendWhatsAppMessage = ({
   phoneNumber,
   participantName,
   messageType = 'check_in_confirmation',
   customMessage,
+  qrId,
 }: WhatsAppMessage): void => {
   try {
     const formattedPhone = formatPhoneNumber(phoneNumber);
-    const message = getHebrewMessage(messageType, participantName, customMessage);
+    const message = getHebrewMessage(messageType, participantName, customMessage, qrId);
     const encodedMessage = encodeURIComponent(message);
     const url = `https://web.whatsapp.com/send/?phone=${formattedPhone}&text=${encodedMessage}&type=phone_number&app_absent=0`;
 
@@ -108,9 +115,10 @@ export const getWhatsAppLink = ({
   participantName,
   messageType = 'check_in_confirmation',
   customMessage,
+  qrId,
 }: WhatsAppMessage): string => {
   const formattedPhone = formatPhoneNumber(phoneNumber);
-  const message = getHebrewMessage(messageType, participantName, customMessage);
+  const message = getHebrewMessage(messageType, participantName, customMessage, qrId);
   const encodedMessage = encodeURIComponent(message);
   return `https://web.whatsapp.com/send/?phone=${formattedPhone}&text=${encodedMessage}&type=phone_number&app_absent=0`;
 };
