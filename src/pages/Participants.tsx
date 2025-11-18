@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { AlertCircle, Plus, Edit2, Trash2, QrCode, CheckCircle, Download, X } from "lucide-react";
+import { AlertCircle, Plus, Edit2, Trash2, QrCode, CheckCircle, Download, X, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import ExcelImport from "@/components/participants/ExcelImport";
 import QRCodeDisplay from "@/components/participants/QRCodeDisplay";
@@ -18,6 +18,7 @@ import { exportParticipantToINI } from "@/lib/iniExport";
 import { useAuditLog } from "@/hooks/useAuditLog";
 import { useDebounce } from "@/hooks/useDebounce";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
+import { sendWhatsAppMessage } from "@/lib/whatsapp";
 
 interface TrialDay {
   id: string;
@@ -802,6 +803,22 @@ export default function Participants() {
                               <Download className="w-4 h-4" />
                             </Button>
                           )}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              sendWhatsAppMessage({
+                                phoneNumber: participant.phone,
+                                participantName: participant.full_name,
+                                messageType: 'trial_reminder',
+                              });
+                            }}
+                            aria-label={`שלח WhatsApp ל${participant.full_name}`}
+                            disabled={!participant.arrived}
+                            title={!participant.arrived ? 'שלח רק לנסיינים שהגיעו' : 'שלח הודעת WhatsApp'}
+                          >
+                            <MessageCircle className="w-4 h-4" />
+                          </Button>
                           <Button
                             variant="outline"
                             size="sm"

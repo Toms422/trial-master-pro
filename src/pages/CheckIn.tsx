@@ -15,6 +15,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useAuditLog } from "@/hooks/useAuditLog";
+import { sendWhatsAppMessage } from "@/lib/whatsapp";
 
 interface Participant {
   id: string;
@@ -137,6 +138,33 @@ export default function CheckIn() {
       } catch (err) {
         console.error('Failed to log audit action:', err);
       }
+
+      // Send WhatsApp notification
+      if (participant?.phone) {
+        try {
+          sendWhatsAppMessage({
+            phoneNumber: participant.phone,
+            participantName: participant.full_name,
+            messageType: 'check_in_confirmation',
+          });
+
+          // Log WhatsApp message initiation
+          try {
+            await logAction({
+              action: 'whatsapp_sent',
+              table_name: 'participants',
+              record_id: participant.id,
+              changes: { phoneNumber: participant.phone, messageType: 'check_in_confirmation' },
+            });
+          } catch (auditErr) {
+            console.error('Failed to log WhatsApp audit action:', auditErr);
+          }
+        } catch (whatsappErr) {
+          console.error('Failed to send WhatsApp message:', whatsappErr);
+          // Don't fail the form submission if WhatsApp fails
+        }
+      }
+
       toast.success(t("checkIn.success"));
       setTimeout(() => {
         navigate("/");
