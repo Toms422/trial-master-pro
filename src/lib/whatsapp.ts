@@ -33,7 +33,7 @@ const formatPhoneNumber = (phone: string): string => {
 
 /**
  * Get Hebrew message template based on message type
- * Includes form link if QR ID is provided
+ * Includes clickable form link if QR ID is provided
  */
 const getHebrewMessage = (
   type: string,
@@ -41,7 +41,7 @@ const getHebrewMessage = (
   customMessage?: string,
   qrId?: string
 ): string => {
-  const formLink = qrId ? `\n\nטופס הרשמה: ${window.location.origin}/check-in/${qrId}` : '';
+  const formLink = qrId ? `\n\n${window.location.origin}/check-in/${qrId}` : '';
 
   switch (type) {
     case 'check_in_confirmation':
