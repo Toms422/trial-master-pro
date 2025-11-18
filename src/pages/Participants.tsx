@@ -173,8 +173,8 @@ export default function Participants() {
         const updateData = {
           full_name: participant.full_name,
           phone: String(participant.phone || ""),
-          notes: participant.notes,
-          station_id: participant.station_id,
+          notes: participant.notes || null,
+          station_id: participant.station_id ? participant.station_id : null,
         };
         const { error } = await supabase
           .from("participants")
@@ -186,8 +186,20 @@ export default function Participants() {
           throw error;
         }
       } else {
-        const { error } = await supabase.from("participants").insert([participant]);
-        if (error) throw error;
+        // For inserts, ensure phone is a string and other fields are properly formatted
+        const insertData = {
+          full_name: participant.full_name,
+          phone: String(participant.phone || ""),
+          notes: participant.notes || null,
+          station_id: participant.station_id ? participant.station_id : null,
+          trial_day_id: participant.trial_day_id,
+        };
+        const { error } = await supabase.from("participants").insert([insertData]);
+        if (error) {
+          console.error('Supabase insert error:', error);
+          console.error('Insert data:', insertData);
+          throw error;
+        }
       }
     },
     onSuccess: async () => {
