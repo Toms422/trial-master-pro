@@ -558,7 +558,7 @@ export default function Participants() {
                 return;
               }
               if (isAtCapacity) {
-                toast.error("יום הניסוי כלא במלוא קיבולתו");
+                toast.error("יום הניסוי מלא");
                 return;
               }
               handleOpenDialog();
@@ -593,7 +593,7 @@ export default function Participants() {
           {/* Capacity Indicator */}
           <div className={`mb-4 p-4 border rounded-lg ${isAtCapacity ? 'bg-red-50 border-red-300' : capacityPercentage > 80 ? 'bg-yellow-50 border-yellow-300' : 'bg-green-50 border-green-300'}`}>
             <div className="flex items-center justify-between mb-2">
-              <span className="font-semibold">קיבולת יום ניסוי</span>
+              <span className="font-semibold">נסיינים ביום הניסוי</span>
               <span className={`text-sm font-bold ${isAtCapacity ? 'text-red-700' : capacityPercentage > 80 ? 'text-yellow-700' : 'text-green-700'}`}>
                 {currentParticipantCount} / {selectedTrialDay.available_slots} ({capacityPercentage}%)
               </span>
@@ -607,7 +607,7 @@ export default function Participants() {
               />
             </div>
             {isAtCapacity && (
-              <p className="text-xs text-red-700 mt-2">יום הניסוי כלא במלוא קיבולתו. לא ניתן להוסיף נסיינים נוספים.</p>
+              <p className="text-xs text-red-700 mt-2">יום הניסוי מלא. לא ניתן להוסיף נסיינים נוספים.</p>
             )}
           </div>
 
