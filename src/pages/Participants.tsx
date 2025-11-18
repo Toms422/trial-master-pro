@@ -893,12 +893,12 @@ export default function Participants() {
 
             <div>
               <Label htmlFor="station">עמדה (אופציונלי)</Label>
-              <Select value={formData.station_id} onValueChange={(value) => setFormData({ ...formData, station_id: value })}>
+              <Select value={formData.station_id || "none"} onValueChange={(value) => setFormData({ ...formData, station_id: value === "none" ? "" : value })}>
                 <SelectTrigger id="station">
                   <SelectValue placeholder="בחר עמדה" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">אף עמדה</SelectItem>
+                  <SelectItem value="none">אף עמדה</SelectItem>
                   {stations?.map((station) => (
                     <SelectItem key={station.id} value={station.id}>
                       {station.name} (קיבולת: {station.capacity})
