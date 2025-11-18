@@ -33,7 +33,7 @@ export const TimeInput: React.FC<TimeInputProps> = ({ id, label, value, onChange
   };
 
   React.useEffect(() => {
-    if (value && !displayValue) {
+    if (value) {
       setDisplayValue(value);
     }
   }, [value]);

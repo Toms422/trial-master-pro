@@ -57,7 +57,7 @@ export const DateInput: React.FC<DateInputProps> = ({ id, label, value, onChange
 
   // Update display value when value prop changes
   React.useEffect(() => {
-    if (value && !displayValue) {
+    if (value) {
       setDisplayValue(isoToDisplay(value));
     }
   }, [value]);
