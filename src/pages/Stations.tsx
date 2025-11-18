@@ -29,7 +29,6 @@ import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 
 const stationSchema = z.object({
   name: z.string().min(2, "שם חייב להכיל לפחות 2 תווים").max(100, "שם חייב להכיל עד 100 תווים"),
-  capacity: z.number().min(1, "קיבולת חייבת להיות לפחות 1").max(1000, "קיבולת לא יכולה להיות יותר מ-1000"),
   description: z.string().optional(),
 });
 
@@ -123,13 +122,12 @@ export default function Stations() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    
+
     try {
       const stationData = stationSchema.parse({
         name: formData.get("name") as string,
-        capacity: parseInt(formData.get("capacity") as string),
         description: formData.get("description") as string,
-      }) as { name: string; capacity: number; description?: string };
+      }) as { name: string; description?: string };
 
       if (editingStation) {
         updateMutation.mutate({ id: editingStation.id, ...stationData });
@@ -176,17 +174,6 @@ export default function Stations() {
                     id="name"
                     name="name"
                     defaultValue={editingStation?.name}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="capacity">מספר עמדות</Label>
-                  <Input
-                    id="capacity"
-                    name="capacity"
-                    type="number"
-                    min="1"
-                    defaultValue={editingStation?.capacity}
                     required
                   />
                 </div>
@@ -264,7 +251,6 @@ export default function Stations() {
                     </Button>
                   </div>
                 </div>
-                <CardDescription>מספר עמדות: {station.capacity}</CardDescription>
               </CardHeader>
               {station.description && (
                 <CardContent>
