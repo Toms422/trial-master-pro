@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { AlertCircle, Plus, Edit2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useDebounce } from "@/hooks/useDebounce";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 
 interface UserProfile {
   id: string;
@@ -233,6 +234,7 @@ export default function Admin() {
 
   return (
     <div className="w-full p-6">
+      <BreadcrumbNav items={[{ label: "ניהול משתמשים" }]} />
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">ניהול משתמשים</h1>
         <Button onClick={() => handleOpenDialog()}>

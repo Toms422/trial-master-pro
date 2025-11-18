@@ -25,6 +25,7 @@ import {
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 
 const stationSchema = z.object({
   name: z.string().min(2, "שם חייב להכיל לפחות 2 תווים").max(100, "שם חייב להכיל עד 100 תווים"),
@@ -144,6 +145,8 @@ export default function Stations() {
 
   return (
     <div className="space-y-6">
+      <BreadcrumbNav items={[{ label: "עמדות ניסוי" }]} />
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">עמדות ניסוי</h1>

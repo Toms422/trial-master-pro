@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertCircle, Plus, Edit2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 
 interface TrialDay {
   id: string;
@@ -241,6 +242,7 @@ export default function TrialDays() {
 
   return (
     <div className="w-full p-6">
+      <BreadcrumbNav items={[{ label: "ימי ניסוי" }]} />
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">ניהול ימי ניסוי</h1>
         <Button onClick={() => handleOpenDialog()}>

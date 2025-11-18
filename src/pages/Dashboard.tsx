@@ -4,6 +4,7 @@ import { TestTube, Calendar, Users, ClipboardList, Shield, ArrowLeft } from "luc
 import { Link } from "react-router-dom";
 import CheckInStatsWidget from "@/components/dashboard/CheckInStatsWidget";
 import ActivityFeed from "@/components/dashboard/ActivityFeed";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 
 export default function Dashboard() {
   const { user, isAdmin, isOperator } = useAuth();
@@ -81,6 +82,8 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-10">
+      <BreadcrumbNav items={[{ label: "דף הבית" }]} />
+
       {/* Header Section */}
       <div className="space-y-4">
         <div>

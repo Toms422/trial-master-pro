@@ -7,7 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import { AlertCircle, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface AuditLog {
   id: string;
@@ -33,6 +35,7 @@ export default function Audit() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
   // Fetch audit logs
   const { data: auditLogs, isLoading, isError, error } = useQuery({
@@ -154,6 +157,29 @@ export default function Audit() {
     return JSON.stringify(changes, null, 2).substring(0, 100) + "...";
   };
 
+  const formatFullChanges = (changes?: any) => {
+    if (!changes) return "-";
+    if (typeof changes === "string") {
+      try {
+        const parsed = JSON.parse(changes);
+        return JSON.stringify(parsed, null, 2);
+      } catch {
+        return changes;
+      }
+    }
+    return JSON.stringify(changes, null, 2);
+  };
+
+  const toggleRowExpanded = (logId: string) => {
+    const newSet = new Set(expandedRows);
+    if (newSet.has(logId)) {
+      newSet.delete(logId);
+    } else {
+      newSet.add(logId);
+    }
+    setExpandedRows(newSet);
+  };
+
   // Pagination logic
   const totalPages = Math.ceil(filteredLogs.length / ITEMS_PER_PAGE);
   const paginatedLogs = useMemo(() => {
@@ -188,6 +214,7 @@ export default function Audit() {
 
   return (
     <div className="w-full p-6 dir-rtl" dir="rtl">
+      <BreadcrumbNav items={[{ label: "לוג אודיט" }]} />
       <h1 className="text-3xl font-bold mb-6">לוג אודיט</h1>
 
       {/* Filters */}
@@ -304,6 +331,7 @@ export default function Audit() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-8"></TableHead>
                   <TableHead>משתמש</TableHead>
                   <TableHead>פעולה</TableHead>
                   <TableHead>טבלה</TableHead>
@@ -315,6 +343,7 @@ export default function Audit() {
               <TableBody>
                 {[0, 1, 2, 3, 4, 5].map((i) => (
                   <TableRow key={i} className="animate-pulse">
+                    <TableCell><Skeleton className="h-4 w-4" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-20" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-20" /></TableCell>
@@ -334,6 +363,7 @@ export default function Audit() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-8"></TableHead>
                     <TableHead>משתמש</TableHead>
                     <TableHead>פעולה</TableHead>
                     <TableHead>טבלה</TableHead>
@@ -344,22 +374,45 @@ export default function Audit() {
                 </TableHeader>
                 <TableBody>
                   {paginatedLogs.map((log, index) => (
-                    <TableRow
-                      key={log.id}
-                      className="hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors duration-150 animate-fade-in"
-                      style={{ animationDelay: `${index * 50}ms` }}
-                    >
-                      <TableCell>{getUserName(log.user_id)}</TableCell>
-                      <TableCell className="font-medium">{log.action}</TableCell>
-                      <TableCell>{log.table_name}</TableCell>
-                      <TableCell className="font-mono text-xs">{log.record_id ? `${log.record_id.substring(0, 8)}...` : "-"}</TableCell>
-                      <TableCell>
-                        <code className="text-xs bg-gray-100 p-2 rounded block max-w-xs overflow-hidden text-ellipsis">
-                          {formatChanges(log.changes)}
-                        </code>
-                      </TableCell>
-                      <TableCell className="whitespace-nowrap text-sm">{formatDate(log.created_at)}</TableCell>
-                    </TableRow>
+                    <React.Fragment key={log.id}>
+                      <TableRow
+                        className="hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors duration-150 animate-fade-in cursor-pointer"
+                        style={{ animationDelay: `${index * 50}ms` }}
+                        onClick={() => log.changes && toggleRowExpanded(log.id)}
+                      >
+                        <TableCell>
+                          {log.changes && (
+                            <ChevronDown
+                              className={`h-4 w-4 transition-transform ${expandedRows.has(log.id) ? "rotate-180" : ""}`}
+                            />
+                          )}
+                        </TableCell>
+                        <TableCell>{getUserName(log.user_id)}</TableCell>
+                        <TableCell className="font-medium">{log.action}</TableCell>
+                        <TableCell>{log.table_name}</TableCell>
+                        <TableCell className="font-mono text-xs">{log.record_id ? `${log.record_id.substring(0, 8)}...` : "-"}</TableCell>
+                        <TableCell>
+                          <code className="text-xs bg-gray-100 p-2 rounded block max-w-xs overflow-hidden text-ellipsis">
+                            {formatChanges(log.changes)}
+                          </code>
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap text-sm">{formatDate(log.created_at)}</TableCell>
+                      </TableRow>
+                      {expandedRows.has(log.id) && log.changes && (
+                        <TableRow className="bg-slate-100 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800">
+                          <TableCell colSpan={7} className="p-4">
+                            <div className="bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-700 p-4">
+                              <p className="text-sm font-semibold mb-3 text-slate-700 dark:text-slate-300">שינויים מפורטים:</p>
+                              <pre className="text-xs bg-slate-50 dark:bg-slate-950 p-3 rounded border border-slate-200 dark:border-slate-700 overflow-x-auto max-h-96 overflow-y-auto font-mono">
+                                <code className="text-slate-800 dark:text-slate-200">
+                                  {formatFullChanges(log.changes)}
+                                </code>
+                              </pre>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </React.Fragment>
                   ))}
                 </TableBody>
               </Table>

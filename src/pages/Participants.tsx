@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { AlertCircle, Plus, Edit2, Trash2, QrCode, CheckCircle, Download } from "lucide-react";
+import { AlertCircle, Plus, Edit2, Trash2, QrCode, CheckCircle, Download, X } from "lucide-react";
 import { toast } from "sonner";
 import ExcelImport from "@/components/participants/ExcelImport";
 import QRCodeDisplay from "@/components/participants/QRCodeDisplay";
@@ -17,6 +17,7 @@ import AnimatedLoadingButton from "@/components/AnimatedLoadingButton";
 import { exportParticipantToINI } from "@/lib/iniExport";
 import { useAuditLog } from "@/hooks/useAuditLog";
 import { useDebounce } from "@/hooks/useDebounce";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 
 interface TrialDay {
   id: string;
@@ -70,10 +71,16 @@ export default function Participants() {
   const [isExcelImportOpen, setIsExcelImportOpen] = useState(false);
   const [isQRDisplayOpen, setIsQRDisplayOpen] = useState(false);
   const [selectedQRCode, setSelectedQRCode] = useState<string>("");
+  const [filterArrived, setFilterArrived] = useState<"all" | "yes" | "no">("all");
+  const [filterFormCompleted, setFilterFormCompleted] = useState<"all" | "yes" | "no">("all");
+  const [filterTrialCompleted, setFilterTrialCompleted] = useState<"all" | "yes" | "no">("all");
+  const [filterStation, setFilterStation] = useState<string>("all");
+  const [selectedParticipantIds, setSelectedParticipantIds] = useState<Set<string>>(new Set());
   const [formData, setFormData] = useState({
     full_name: "",
     phone: "",
     notes: "",
+    station_id: "",
   });
 
   // Fetch trial days
@@ -118,11 +125,43 @@ export default function Participants() {
   // Filter and search participants
   const filteredParticipants = useMemo(() => {
     if (!allParticipants) return [];
-    return allParticipants.filter((p) =>
-      p.full_name.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
-      p.phone.includes(debouncedSearchQuery)
-    );
-  }, [allParticipants, debouncedSearchQuery]);
+    return allParticipants.filter((p) => {
+      // Search filter
+      const searchMatch = p.full_name.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
+        p.phone.includes(debouncedSearchQuery);
+      if (!searchMatch) return false;
+
+      // Arrival status filter
+      if (filterArrived !== "all") {
+        const arrived = filterArrived === "yes" ? true : false;
+        if (p.arrived !== arrived) return false;
+      }
+
+      // Form completion filter
+      if (filterFormCompleted !== "all") {
+        const completed = filterFormCompleted === "yes" ? true : false;
+        if (p.form_completed !== completed) return false;
+      }
+
+      // Trial completion filter
+      if (filterTrialCompleted !== "all") {
+        const completed = filterTrialCompleted === "yes" ? true : false;
+        if (p.trial_completed !== completed) return false;
+      }
+
+      // Station filter
+      if (filterStation !== "all") {
+        const stationId = (p.stations as any)?.id;
+        if (filterStation === "unassigned") {
+          if (stationId) return false;
+        } else {
+          if (stationId !== filterStation) return false;
+        }
+      }
+
+      return true;
+    });
+  }, [allParticipants, debouncedSearchQuery, filterArrived, filterFormCompleted, filterTrialCompleted, filterStation]);
 
   // Create/Update participant mutation
   const upsertMutation = useMutation({
@@ -269,7 +308,7 @@ export default function Participants() {
   });
 
   const resetForm = () => {
-    setFormData({ full_name: "", phone: "", notes: "" });
+    setFormData({ full_name: "", phone: "", notes: "", station_id: "" });
     setEditingParticipant(null);
     setIsDialogOpen(false);
   };
@@ -281,6 +320,7 @@ export default function Participants() {
         full_name: participant.full_name,
         phone: participant.phone,
         notes: participant.notes || "",
+        station_id: participant.station_id || "",
       });
     } else {
       resetForm();
@@ -306,12 +346,100 @@ export default function Participants() {
     }
   };
 
+  // Bulk delete mutation
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (ids: string[]) => {
+      for (const id of ids) {
+        const { error } = await supabase
+          .from("participants")
+          .delete()
+          .eq("id", id);
+        if (error) throw error;
+      }
+    },
+    onSuccess: async () => {
+      // Log bulk action
+      try {
+        await logAction({
+          action: 'bulk_deleted',
+          table_name: 'participants',
+          record_id: 'bulk_delete',
+          changes: { count: selectedParticipantIds.size },
+        });
+      } catch (err) {
+        console.error('Failed to log audit action:', err);
+      }
+      queryClient.invalidateQueries({ queryKey: ["participants", selectedTrialDayId] });
+      setSelectedParticipantIds(new Set());
+      toast.success(`${selectedParticipantIds.size} נסיינים נמחקו בהצלחה`);
+    },
+    onError: (error) => {
+      toast.error(`שגיאה: ${error.message}`);
+    },
+  });
+
+  // Handle bulk delete
+  const handleBulkDelete = () => {
+    if (selectedParticipantIds.size === 0) {
+      toast.error("אנא בחר נסיינים למחיקה");
+      return;
+    }
+    if (confirm(`האם בטוח למחוק ${selectedParticipantIds.size} נסיינים?`)) {
+      bulkDeleteMutation.mutate(Array.from(selectedParticipantIds));
+    }
+  };
+
+  // Handle bulk export
+  const handleBulkExport = () => {
+    if (selectedParticipantIds.size === 0) {
+      toast.error("אנא בחר נסיינים לייצוא");
+      return;
+    }
+    const selectedParticipants = filteredParticipants.filter((p) => selectedParticipantIds.has(p.id));
+    const csvData = selectedParticipants
+      .map((p) => `${p.full_name},${p.phone},${p.arrived ? "כן" : "לא"},${p.form_completed ? "כן" : "לא"},${p.trial_completed ? "כן" : "לא"}`)
+      .join("\n");
+    const headers = "שם מלא,טלפון,הגעה,טופס,ניסוי\n";
+    const blob = new Blob([headers + csvData], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.download = `participants_export_${new Date().toISOString().split("T")[0]}.csv`;
+    link.click();
+    toast.success(`${selectedParticipantIds.size} נסיינים יוצאו בהצלחה`);
+  };
+
+  // Toggle participant selection
+  const toggleParticipantSelection = (id: string) => {
+    const newSet = new Set(selectedParticipantIds);
+    if (newSet.has(id)) {
+      newSet.delete(id);
+    } else {
+      newSet.add(id);
+    }
+    setSelectedParticipantIds(newSet);
+  };
+
+  // Select/Deselect all visible participants
+  const toggleSelectAll = () => {
+    if (selectedParticipantIds.size === filteredParticipants.length) {
+      setSelectedParticipantIds(new Set());
+    } else {
+      setSelectedParticipantIds(new Set(filteredParticipants.map((p) => p.id)));
+    }
+  };
+
   const handleShowQR = (qrCode?: string) => {
     if (qrCode) {
       setSelectedQRCode(qrCode);
       setIsQRDisplayOpen(true);
     }
   };
+
+  // Calculate current participant count for capacity check
+  const currentParticipantCount = useMemo(() => {
+    return allParticipants?.length || 0;
+  }, [allParticipants]);
 
   const getStatusBadge = (status: boolean, timestamp?: string) => {
     if (status) {
@@ -336,8 +464,17 @@ export default function Participants() {
 
   const selectedTrialDay = trialDays?.find((td) => td.id === selectedTrialDayId);
 
+  // Check if at capacity
+  const isAtCapacity = selectedTrialDay && currentParticipantCount >= selectedTrialDay.available_slots;
+
+  // Get capacity percentage for UI
+  const capacityPercentage = selectedTrialDay
+    ? Math.round((currentParticipantCount / selectedTrialDay.available_slots) * 100)
+    : 0;
+
   return (
     <div className="w-full p-6 dir-rtl" dir="rtl">
+      <BreadcrumbNav items={[{ label: "ניהול נסיינים" }]} />
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">ניהול נסיינים</h1>
         <div className="flex gap-2">
@@ -351,9 +488,13 @@ export default function Participants() {
                 toast.error("אנא בחר יום ניסוי קודם לכן");
                 return;
               }
+              if (isAtCapacity) {
+                toast.error("יום הניסוי כלא במלוא קיבולתו");
+                return;
+              }
               handleOpenDialog();
             }}
-            disabled={!selectedTrialDayId}
+            disabled={!selectedTrialDayId || isAtCapacity}
           >
             <Plus className="w-4 h-4 ml-2" />
             נסיין חדש
@@ -380,6 +521,27 @@ export default function Participants() {
 
       {selectedTrialDay && (
         <>
+          {/* Capacity Indicator */}
+          <div className={`mb-4 p-4 border rounded-lg ${isAtCapacity ? 'bg-red-50 border-red-300' : capacityPercentage > 80 ? 'bg-yellow-50 border-yellow-300' : 'bg-green-50 border-green-300'}`}>
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-semibold">קיבולת יום ניסוי</span>
+              <span className={`text-sm font-bold ${isAtCapacity ? 'text-red-700' : capacityPercentage > 80 ? 'text-yellow-700' : 'text-green-700'}`}>
+                {currentParticipantCount} / {selectedTrialDay.available_slots} ({capacityPercentage}%)
+              </span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  isAtCapacity ? 'bg-red-500' : capacityPercentage > 80 ? 'bg-yellow-500' : 'bg-green-500'
+                }`}
+                style={{ width: `${Math.min(capacityPercentage, 100)}%` }}
+              />
+            </div>
+            {isAtCapacity && (
+              <p className="text-xs text-red-700 mt-2">יום הניסוי כלא במלוא קיבולתו. לא ניתן להוסיף נסיינים נוספים.</p>
+            )}
+          </div>
+
           {/* Search Bar */}
           <div className="mb-4">
             <Input
@@ -388,6 +550,95 @@ export default function Participants() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
+
+          {/* Status Filters */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            {/* Arrival Status Filter */}
+            <div>
+              <Label htmlFor="filter-arrived">סטטוס הגעה</Label>
+              <Select value={filterArrived} onValueChange={(value: any) => setFilterArrived(value)}>
+                <SelectTrigger id="filter-arrived">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">כולם</SelectItem>
+                  <SelectItem value="yes">הגיע</SelectItem>
+                  <SelectItem value="no">לא הגיע</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Form Completion Filter */}
+            <div>
+              <Label htmlFor="filter-form">סטטוס טופס</Label>
+              <Select value={filterFormCompleted} onValueChange={(value: any) => setFilterFormCompleted(value)}>
+                <SelectTrigger id="filter-form">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">כולם</SelectItem>
+                  <SelectItem value="yes">הושלם</SelectItem>
+                  <SelectItem value="no">לא הושלם</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Trial Completion Filter */}
+            <div>
+              <Label htmlFor="filter-trial">סטטוס ניסוי</Label>
+              <Select value={filterTrialCompleted} onValueChange={(value: any) => setFilterTrialCompleted(value)}>
+                <SelectTrigger id="filter-trial">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">כולם</SelectItem>
+                  <SelectItem value="yes">הושלם</SelectItem>
+                  <SelectItem value="no">לא הושלם</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Station Filter */}
+            <div>
+              <Label htmlFor="filter-station">עמדה</Label>
+              <Select value={filterStation} onValueChange={setFilterStation}>
+                <SelectTrigger id="filter-station">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">כולן</SelectItem>
+                  <SelectItem value="unassigned">לא משוייך</SelectItem>
+                  {stations?.map((station) => (
+                    <SelectItem key={station.id} value={station.id}>
+                      {station.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Active Filters Badge */}
+          {(filterArrived !== "all" || filterFormCompleted !== "all" || filterTrialCompleted !== "all" || filterStation !== "all") && (
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
+              <span className="text-sm text-blue-800">
+                סוגנים פעילים: {[filterArrived !== "all" && 1, filterFormCompleted !== "all" && 1, filterTrialCompleted !== "all" && 1, filterStation !== "all" && 1].filter(Boolean).length}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setFilterArrived("all");
+                  setFilterFormCompleted("all");
+                  setFilterTrialCompleted("all");
+                  setFilterStation("all");
+                  setSearchQuery("");
+                }}
+              >
+                נקה סנני
+              </Button>
+            </div>
+          )}
 
           {/* Participants Table */}
           {participantsLoading ? (
@@ -422,10 +673,53 @@ export default function Participants() {
               </Table>
             </div>
           ) : filteredParticipants.length > 0 ? (
-            <div className="border rounded-lg overflow-hidden">
+            <>
+              {/* Bulk Actions Toolbar */}
+              {selectedParticipantIds.size > 0 && (
+                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
+                  <span className="text-sm font-medium text-blue-800">
+                    {selectedParticipantIds.size} נסיינים נבחרים
+                  </span>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleBulkExport}
+                    >
+                      <Download className="w-4 h-4 ml-2" />
+                      ייצוא
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={handleBulkDelete}
+                      disabled={bulkDeleteMutation.isPending}
+                    >
+                      <Trash2 className="w-4 h-4 ml-2" />
+                      {bulkDeleteMutation.isPending ? "מוחק..." : "מחק"}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSelectedParticipantIds(new Set())}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+              <div className="border rounded-lg overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-10">
+                      <input
+                        type="checkbox"
+                        checked={selectedParticipantIds.size === filteredParticipants.length && filteredParticipants.length > 0}
+                        onChange={toggleSelectAll}
+                        aria-label="בחר/בטל בחירה של כל הנסיינים"
+                      />
+                    </TableHead>
                     <TableHead>שם מלא</TableHead>
                     <TableHead>טלפון</TableHead>
                     <TableHead>הגעה</TableHead>
@@ -443,6 +737,14 @@ export default function Participants() {
                       className="hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors duration-150 animate-fade-in"
                       style={{ animationDelay: `${index * 50}ms` }}
                     >
+                      <TableCell className="w-10">
+                        <input
+                          type="checkbox"
+                          checked={selectedParticipantIds.has(participant.id)}
+                          onChange={() => toggleParticipantSelection(participant.id)}
+                          aria-label={`בחר ${participant.full_name}`}
+                        />
+                      </TableCell>
                       <TableCell className="font-medium">{participant.full_name}</TableCell>
                       <TableCell>{participant.phone}</TableCell>
                       <TableCell>{getStatusBadge(participant.arrived, participant.arrived_at)}</TableCell>
@@ -523,6 +825,7 @@ export default function Participants() {
                 </TableBody>
               </Table>
             </div>
+            </>
           ) : (
             <div className="flex flex-col items-center justify-center p-12 border rounded-lg border-dashed">
               <AlertCircle className="w-12 h-12 text-muted-foreground mb-4" />
@@ -569,6 +872,23 @@ export default function Participants() {
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               />
+            </div>
+
+            <div>
+              <Label htmlFor="station">עמדה (אופציונלי)</Label>
+              <Select value={formData.station_id} onValueChange={(value) => setFormData({ ...formData, station_id: value })}>
+                <SelectTrigger id="station">
+                  <SelectValue placeholder="בחר עמדה" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">אף עמדה</SelectItem>
+                  {stations?.map((station) => (
+                    <SelectItem key={station.id} value={station.id}>
+                      {station.name} (קיבולת: {station.capacity})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="flex gap-2 justify-end mt-6">

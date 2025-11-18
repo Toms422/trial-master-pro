@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
 export interface AuditLogEntry {
-  action: 'created' | 'updated' | 'deleted' | 'marked_arrived' | 'qr_generated' | 'form_submitted';
+  action: 'created' | 'updated' | 'deleted' | 'marked_arrived' | 'qr_generated' | 'form_submitted' | 'bulk_deleted';
   table_name: string;
   record_id: string;
   changes?: Record<string, unknown>;
