@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { AlertCircle, Plus, Edit2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
+import { formatDateToDDMMYYYY, parseDDMMYYYYToISO } from "@/lib/dateUtils";
 
 interface TrialDay {
   id: string;
@@ -356,13 +357,22 @@ export default function TrialDays() {
 
           <div className="space-y-4">
             <div>
-              <Label htmlFor="date">תאריך* (מהיום או בעתיד)</Label>
+              <Label htmlFor="date">תאריך* (מהיום או בעתיד) - dd/mm/yyyy</Label>
               <Input
                 id="date"
-                type="date"
-                min={new Date().toISOString().split('T')[0]}
-                value={formData.date}
-                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                type="text"
+                value={formData.date ? formatDateToDDMMYYYY(formData.date) : ''}
+                onChange={(e) => {
+                  const ddmmyyyy = e.target.value;
+                  if (ddmmyyyy.length === 0) {
+                    setFormData({ ...formData, date: '' });
+                  } else if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(ddmmyyyy)) {
+                    const isoDate = parseDDMMYYYYToISO(ddmmyyyy);
+                    setFormData({ ...formData, date: isoDate });
+                  }
+                }}
+                placeholder="dd/mm/yyyy"
+                maxLength="10"
               />
             </div>
 
@@ -374,6 +384,7 @@ export default function TrialDays() {
                   type="time"
                   value={formData.start_time}
                   onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
+                  placeholder="HH:mm"
                 />
               </div>
               <div>
@@ -383,6 +394,7 @@ export default function TrialDays() {
                   type="time"
                   value={formData.end_time}
                   onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
+                  placeholder="HH:mm"
                 />
               </div>
             </div>
