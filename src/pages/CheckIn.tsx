@@ -95,9 +95,10 @@ export default function CheckIn() {
         .from("participants")
         .select("*")
         .eq("qr_code", qrId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+      if (!data) throw new Error("Participant not found");
       return data as Participant;
     },
     enabled: !!qrId,

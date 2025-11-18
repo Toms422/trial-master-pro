@@ -28,32 +28,30 @@ export default function CheckInStatsWidget() {
 
       const { data, error } = await supabase
         .from("participants")
-        .select("arrived, form_completed, trial_day_id")
-        .then(async (result) => {
-          if (result.error) throw result.error;
-
-          // Get today's trial day ID
-          const { data: trialDays } = await supabase
-            .from("trial_days")
-            .select("id")
-            .eq("date", today);
-
-          if (!trialDays || trialDays.length === 0) {
-            return { data: [] };
-          }
-
-          const todayTrialDayIds = trialDays.map(td => td.id);
-
-          // Filter participants for today's trial days
-          const todayParticipants = result.data?.filter(p =>
-            todayTrialDayIds.includes(p.trial_day_id)
-          ) || [];
-
-          return { data: todayParticipants };
-        });
+        .select("arrived, form_completed, trial_day_id");
 
       if (error) throw error;
-      return data;
+
+      // Get today's trial day ID
+      const { data: trialDays, error: trialDaysError } = await supabase
+        .from("trial_days")
+        .select("id")
+        .eq("date", today);
+
+      if (trialDaysError) throw trialDaysError;
+
+      if (!trialDays || trialDays.length === 0) {
+        return [];
+      }
+
+      const todayTrialDayIds = trialDays.map(td => td.id);
+
+      // Filter participants for today's trial days
+      const todayParticipants = data?.filter(p =>
+        todayTrialDayIds.includes(p.trial_day_id)
+      ) || [];
+
+      return todayParticipants;
     },
     refetchInterval: 5000, // Refetch every 5 seconds as fallback
   });
