@@ -180,7 +180,7 @@ export default function Stations() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="capacity">קיבולת</Label>
+                  <Label htmlFor="capacity">מספר עמדות</Label>
                   <Input
                     id="capacity"
                     name="capacity"
@@ -264,7 +264,7 @@ export default function Stations() {
                     </Button>
                   </div>
                 </div>
-                <CardDescription>קיבולת: {station.capacity}</CardDescription>
+                <CardDescription>מספר עמדות: {station.capacity}</CardDescription>
               </CardHeader>
               {station.description && (
                 <CardContent>
