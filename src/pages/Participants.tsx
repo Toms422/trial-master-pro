@@ -918,19 +918,11 @@ export default function Participants() {
                       }}>
                         {editingArrivalTimeId === participant.id ? (
                           <input
-                            type="text"
+                            type="time"
                             value={editingArrivalTimeValue}
-                            placeholder="HH:mm"
-                            onChange={(e) => {
-                              let val = e.target.value;
-                              // Auto-format as user types
-                              if (val.length === 2 && !val.includes(':')) {
-                                val += ':';
-                              }
-                              setEditingArrivalTimeValue(val);
-                            }}
+                            onChange={(e) => setEditingArrivalTimeValue(e.target.value)}
                             onBlur={() => {
-                              if (editingArrivalTimeValue && /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/.test(editingArrivalTimeValue)) {
+                              if (editingArrivalTimeValue) {
                                 quickArrivalTimeUpdateMutation.mutate({
                                   participantId: participant.id,
                                   arrivalTime: editingArrivalTimeValue,
@@ -940,7 +932,7 @@ export default function Participants() {
                               }
                             }}
                             onKeyDown={(e) => {
-                              if (e.key === "Enter" && editingArrivalTimeValue && /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/.test(editingArrivalTimeValue)) {
+                              if (e.key === "Enter" && editingArrivalTimeValue) {
                                 quickArrivalTimeUpdateMutation.mutate({
                                   participantId: participant.id,
                                   arrivalTime: editingArrivalTimeValue,
@@ -950,14 +942,12 @@ export default function Participants() {
                               }
                             }}
                             onClick={(e) => e.stopPropagation()}
-                            maxLength="5"
                             autoFocus
                             style={{
                               padding: "0.25rem 0.5rem",
                               border: "1px solid #3b82f6",
                               borderRadius: "0.375rem",
                               width: "100%",
-                              fontFamily: "monospace",
                             }}
                           />
                         ) : (
