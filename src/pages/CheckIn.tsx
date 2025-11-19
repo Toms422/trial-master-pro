@@ -109,19 +109,29 @@ export default function CheckIn() {
     mutationFn: async (formData: CheckInFormData) => {
       if (!participant) throw new Error("Participant not found");
 
-      const { consent, ...updateData } = formData;
+      const { consent, ...formDataWithoutConsent } = formData;
+
+      // Only send fields that exist in the database
+      const updateData = {
+        age: formDataWithoutConsent.age,
+        weight_kg: formDataWithoutConsent.weight_kg,
+        height_cm: formDataWithoutConsent.height_cm,
+        gender: formDataWithoutConsent.gender,
+        skin_color: formDataWithoutConsent.skin_color,
+        form_completed: true,
+        form_completed_at: new Date().toISOString(),
+        digital_signature: consent ? "agreed" : "",
+      };
 
       const { error } = await supabase
         .from("participants")
-        .update({
-          ...updateData,
-          form_completed: true,
-          form_completed_at: new Date().toISOString(),
-          digital_signature: consent ? "agreed" : "",
-        })
+        .update(updateData)
         .eq("id", participant.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error("CheckIn form submission error:", error);
+        throw error;
+      }
     },
     onSuccess: async () => {
       // Log the form submission
@@ -145,6 +155,7 @@ export default function CheckIn() {
       }, 1500);
     },
     onError: (error) => {
+      console.error("CheckIn submission failed:", error);
       toast.error(t("checkIn.error"));
     },
   });
