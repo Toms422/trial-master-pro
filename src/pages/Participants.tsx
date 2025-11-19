@@ -41,6 +41,7 @@ interface Participant {
   phone: string;
   arrived: boolean;
   arrived_at?: string;
+  desired_arrival_time?: string;
   form_completed: boolean;
   form_completed_at?: string;
   trial_completed: boolean;
@@ -77,11 +78,13 @@ export default function Participants() {
   const [filterTrialCompleted, setFilterTrialCompleted] = useState<"all" | "yes" | "no">("all");
   const [filterStation, setFilterStation] = useState<string>("all");
   const [selectedParticipantIds, setSelectedParticipantIds] = useState<Set<string>>(new Set());
+  const [bulkArrivalTime, setBulkArrivalTime] = useState<string>("");
   const [formData, setFormData] = useState({
     full_name: "",
     phone: "",
     notes: "",
     station_id: "",
+    desired_arrival_time: "",
   });
 
   // Fetch trial days
@@ -175,6 +178,7 @@ export default function Participants() {
           phone: String(participant.phone || ""),
           notes: participant.notes || null,
           station_id: participant.station_id ? participant.station_id : null,
+          desired_arrival_time: participant.desired_arrival_time || null,
         };
         const { error } = await supabase
           .from("participants")
@@ -192,6 +196,7 @@ export default function Participants() {
           phone: String(participant.phone || ""),
           notes: participant.notes || null,
           station_id: participant.station_id ? participant.station_id : null,
+          desired_arrival_time: participant.desired_arrival_time || null,
           trial_day_id: participant.trial_day_id,
         };
         const { error } = await supabase.from("participants").insert([insertData]);
@@ -382,6 +387,7 @@ export default function Participants() {
         phone: participant.phone,
         notes: participant.notes || "",
         station_id: participant.station_id || "",
+        desired_arrival_time: participant.desired_arrival_time || "",
       });
     } else {
       resetForm();
@@ -447,6 +453,38 @@ export default function Participants() {
     },
   });
 
+  // Bulk arrival time update mutation
+  const bulkArrivalTimeMutation = useMutation({
+    mutationFn: async ({ ids, arrivalTime }: { ids: string[]; arrivalTime: string }) => {
+      for (const id of ids) {
+        const { error } = await supabase
+          .from("participants")
+          .update({ desired_arrival_time: arrivalTime })
+          .eq("id", id);
+        if (error) throw error;
+      }
+    },
+    onSuccess: async () => {
+      // Log bulk action
+      try {
+        await logAction({
+          action: 'bulk_updated_arrival_time',
+          table_name: 'participants',
+          record_id: 'bulk_update',
+          changes: { count: selectedParticipantIds.size, arrival_time: bulkArrivalTime },
+        });
+      } catch (err) {
+        console.error('Failed to log audit action:', err);
+      }
+      queryClient.invalidateQueries({ queryKey: ["participants", selectedTrialDayId] });
+      setBulkArrivalTime("");
+      toast.success(`שעת הגעה עודכנה ל-${selectedParticipantIds.size} נסיינים`);
+    },
+    onError: (error) => {
+      toast.error(`שגיאה: ${error.message}`);
+    },
+  });
+
   // Handle bulk delete
   const handleBulkDelete = () => {
     if (selectedParticipantIds.size === 0) {
@@ -476,6 +514,22 @@ export default function Participants() {
     link.download = `participants_export_${new Date().toISOString().split("T")[0]}.csv`;
     link.click();
     toast.success(`${selectedParticipantIds.size} נסיינים יוצאו בהצלחה`);
+  };
+
+  // Handle bulk arrival time update
+  const handleBulkArrivalTimeUpdate = () => {
+    if (selectedParticipantIds.size === 0) {
+      toast.error("אנא בחר נסיינים לעדכון");
+      return;
+    }
+    if (!bulkArrivalTime) {
+      toast.error("אנא בחר שעת הגעה");
+      return;
+    }
+    bulkArrivalTimeMutation.mutate({
+      ids: Array.from(selectedParticipantIds),
+      arrivalTime: bulkArrivalTime,
+    });
   };
 
   // Toggle participant selection
@@ -745,11 +799,37 @@ export default function Participants() {
             <>
               {/* Bulk Actions Toolbar */}
               {selectedParticipantIds.size > 0 && (
-                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
-                  <span className="text-sm font-medium text-blue-800">
-                    {selectedParticipantIds.size} נסיינים נבחרים
-                  </span>
-                  <div className="flex gap-2">
+                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-sm font-medium text-blue-800">
+                      {selectedParticipantIds.size} נסיינים נבחרים
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSelectedParticipantIds(new Set())}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  <div className="flex gap-2 flex-wrap">
+                    <div className="flex gap-2">
+                      <Input
+                        type="time"
+                        value={bulkArrivalTime}
+                        onChange={(e) => setBulkArrivalTime(e.target.value)}
+                        placeholder="שעת הגעה"
+                        className="w-32"
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleBulkArrivalTimeUpdate}
+                        disabled={bulkArrivalTimeMutation.isPending || !bulkArrivalTime}
+                      >
+                        {bulkArrivalTimeMutation.isPending ? "מעדכן..." : "עדכן שעה"}
+                      </Button>
+                    </div>
                     <Button
                       variant="outline"
                       size="sm"
@@ -766,13 +846,6 @@ export default function Participants() {
                     >
                       <Trash2 className="w-4 h-4 ml-2" />
                       {bulkDeleteMutation.isPending ? "מוחק..." : "מחק"}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setSelectedParticipantIds(new Set())}
-                    >
-                      <X className="w-4 h-4" />
                     </Button>
                   </div>
                 </div>
@@ -792,6 +865,7 @@ export default function Participants() {
                     <TableHead>שם מלא</TableHead>
                     <TableHead>טלפון</TableHead>
                     <TableHead>הגעה</TableHead>
+                    <TableHead>שעת הגעה רצויה</TableHead>
                     <TableHead>טופס</TableHead>
                     <TableHead>ניסוי</TableHead>
                     <TableHead>QR</TableHead>
@@ -817,6 +891,7 @@ export default function Participants() {
                       <TableCell className="font-medium">{participant.full_name}</TableCell>
                       <TableCell>{participant.phone}</TableCell>
                       <TableCell>{getStatusBadge(participant.arrived, participant.arrived_at)}</TableCell>
+                      <TableCell className="text-sm">{participant.desired_arrival_time || "-"}</TableCell>
                       <TableCell>{getStatusBadge(participant.form_completed, participant.form_completed_at)}</TableCell>
                       <TableCell>{getStatusBadge(participant.trial_completed, participant.trial_completed_at)}</TableCell>
                       <TableCell>
@@ -957,6 +1032,16 @@ export default function Participants() {
                 id="notes"
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="desired_arrival_time">שעת הגעה רצויה</Label>
+              <Input
+                id="desired_arrival_time"
+                type="time"
+                value={formData.desired_arrival_time}
+                onChange={(e) => setFormData({ ...formData, desired_arrival_time: e.target.value })}
               />
             </div>
 
