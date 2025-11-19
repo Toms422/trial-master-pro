@@ -913,7 +913,10 @@ export default function Participants() {
                       <TableCell className="font-medium">{participant.full_name}</TableCell>
                       <TableCell>{participant.phone}</TableCell>
                       <TableCell>{getStatusBadge(participant.arrived, participant.arrived_at)}</TableCell>
-                      <TableCell className="text-sm cursor-pointer hover:bg-blue-50">
+                      <TableCell className="text-sm cursor-pointer hover:bg-blue-50" onClick={() => {
+                        setEditingArrivalTimeId(participant.id);
+                        setEditingArrivalTimeValue(participant.desired_arrival_time || "");
+                      }}>
                         {editingArrivalTimeId === participant.id ? (
                           <input
                             type="time"
@@ -939,6 +942,7 @@ export default function Participants() {
                                 setEditingArrivalTimeId(null);
                               }
                             }}
+                            onClick={(e) => e.stopPropagation()}
                             autoFocus
                             style={{
                               padding: "0.25rem 0.5rem",
@@ -948,12 +952,7 @@ export default function Participants() {
                             }}
                           />
                         ) : (
-                          <span
-                            onClick={() => {
-                              setEditingArrivalTimeId(participant.id);
-                              setEditingArrivalTimeValue(participant.desired_arrival_time || "");
-                            }}
-                          >
+                          <span>
                             {participant.desired_arrival_time || "-"}
                           </span>
                         )}
