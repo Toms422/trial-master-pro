@@ -886,8 +886,8 @@ export default function Participants() {
                     </TableHead>
                     <TableHead>שם מלא</TableHead>
                     <TableHead>טלפון</TableHead>
-                    <TableHead>הגעה</TableHead>
                     <TableHead>שעת הגעה רצויה</TableHead>
+                    <TableHead>הגעה</TableHead>
                     <TableHead>טופס</TableHead>
                     <TableHead>ניסוי</TableHead>
                     <TableHead>QR</TableHead>
@@ -912,7 +912,6 @@ export default function Participants() {
                       </TableCell>
                       <TableCell className="font-medium">{participant.full_name}</TableCell>
                       <TableCell>{participant.phone}</TableCell>
-                      <TableCell>{getStatusBadge(participant.arrived, participant.arrived_at)}</TableCell>
                       <TableCell className="text-sm cursor-pointer hover:bg-blue-50" onClick={() => {
                         setEditingArrivalTimeId(participant.id);
                         setEditingArrivalTimeValue(participant.desired_arrival_time || "");
@@ -953,10 +952,11 @@ export default function Participants() {
                           />
                         ) : (
                           <span>
-                            {participant.desired_arrival_time || "-"}
+                            {participant.desired_arrival_time ? participant.desired_arrival_time.substring(0, 5) : "-"}
                           </span>
                         )}
                       </TableCell>
+                      <TableCell>{getStatusBadge(participant.arrived, participant.arrived_at)}</TableCell>
                       <TableCell>{getStatusBadge(participant.form_completed, participant.form_completed_at)}</TableCell>
                       <TableCell>{getStatusBadge(participant.trial_completed, participant.trial_completed_at)}</TableCell>
                       <TableCell>
