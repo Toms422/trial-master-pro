@@ -79,6 +79,8 @@ export default function Participants() {
   const [filterStation, setFilterStation] = useState<string>("all");
   const [selectedParticipantIds, setSelectedParticipantIds] = useState<Set<string>>(new Set());
   const [bulkArrivalTime, setBulkArrivalTime] = useState<string>("");
+  const [editingArrivalTimeId, setEditingArrivalTimeId] = useState<string | null>(null);
+  const [editingArrivalTimeValue, setEditingArrivalTimeValue] = useState<string>("");
   const [formData, setFormData] = useState({
     full_name: "",
     phone: "",
@@ -479,6 +481,26 @@ export default function Participants() {
       queryClient.invalidateQueries({ queryKey: ["participants", selectedTrialDayId] });
       setBulkArrivalTime("");
       toast.success(`שעת הגעה עודכנה ל-${selectedParticipantIds.size} נסיינים`);
+    },
+    onError: (error) => {
+      toast.error(`שגיאה: ${error.message}`);
+    },
+  });
+
+  // Quick arrival time update mutation (for inline editing)
+  const quickArrivalTimeUpdateMutation = useMutation({
+    mutationFn: async ({ participantId, arrivalTime }: { participantId: string; arrivalTime: string }) => {
+      const { error } = await supabase
+        .from("participants")
+        .update({ desired_arrival_time: arrivalTime })
+        .eq("id", participantId);
+      if (error) throw error;
+    },
+    onSuccess: async () => {
+      queryClient.invalidateQueries({ queryKey: ["participants", selectedTrialDayId] });
+      setEditingArrivalTimeId(null);
+      setEditingArrivalTimeValue("");
+      toast.success("שעת הגעה עודכנה");
     },
     onError: (error) => {
       toast.error(`שגיאה: ${error.message}`);
@@ -891,7 +913,51 @@ export default function Participants() {
                       <TableCell className="font-medium">{participant.full_name}</TableCell>
                       <TableCell>{participant.phone}</TableCell>
                       <TableCell>{getStatusBadge(participant.arrived, participant.arrived_at)}</TableCell>
-                      <TableCell className="text-sm">{participant.desired_arrival_time || "-"}</TableCell>
+                      <TableCell className="text-sm cursor-pointer hover:bg-blue-50">
+                        {editingArrivalTimeId === participant.id ? (
+                          <input
+                            type="time"
+                            value={editingArrivalTimeValue}
+                            onChange={(e) => setEditingArrivalTimeValue(e.target.value)}
+                            onBlur={() => {
+                              if (editingArrivalTimeValue) {
+                                quickArrivalTimeUpdateMutation.mutate({
+                                  participantId: participant.id,
+                                  arrivalTime: editingArrivalTimeValue,
+                                });
+                              } else {
+                                setEditingArrivalTimeId(null);
+                              }
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" && editingArrivalTimeValue) {
+                                quickArrivalTimeUpdateMutation.mutate({
+                                  participantId: participant.id,
+                                  arrivalTime: editingArrivalTimeValue,
+                                });
+                              } else if (e.key === "Escape") {
+                                setEditingArrivalTimeId(null);
+                              }
+                            }}
+                            autoFocus
+                            style={{
+                              padding: "0.25rem 0.5rem",
+                              border: "1px solid #3b82f6",
+                              borderRadius: "0.375rem",
+                              width: "100%",
+                            }}
+                          />
+                        ) : (
+                          <span
+                            onClick={() => {
+                              setEditingArrivalTimeId(participant.id);
+                              setEditingArrivalTimeValue(participant.desired_arrival_time || "");
+                            }}
+                          >
+                            {participant.desired_arrival_time || "-"}
+                          </span>
+                        )}
+                      </TableCell>
                       <TableCell>{getStatusBadge(participant.form_completed, participant.form_completed_at)}</TableCell>
                       <TableCell>{getStatusBadge(participant.trial_completed, participant.trial_completed_at)}</TableCell>
                       <TableCell>
